@@ -87,3 +87,134 @@ footer{display:flex;justify-content:space-between;gap:10px;color:#6f849a;font-si
 .idealZoneSummary>div{display:flex;gap:6px;margin-top:7px}.idealZoneSummary em{font-size:8px;font-style:normal;border:1px solid #35495c;border-radius:12px;padding:3px 6px}.idealZoneSummary em.hit{border-color:#7b5a9b;color:#d3a6ff}
 .miniCount{position:absolute;right:8px;top:7px;font-size:8px;color:#8299ad;pointer-events:none}
 .overviewHeader span{margin-left:8px;color:#8299ad;font-size:9px}
+
+/* ============================================================
+   V9 Research UI — information-rich, readable, Chinese-first
+   ============================================================ */
+:root{
+  --font-main:13px;
+  --font-small:12px;
+  --font-title:16px;
+  --font-card-title:14px;
+}
+body{font-size:var(--font-main);line-height:1.48}
+button,input,select,textarea{font-size:13px}
+.hint,.mutedNote,.caseStatus,.caseCounts,.judgementGuide{font-size:12px!important;line-height:1.6}
+.toolTitle{font-size:13px;font-weight:700}
+.caseBox h4,.caseResearchBox h4{font-size:14px!important;margin-bottom:9px}
+.sectionHead h3{font-size:16px!important}
+.sectionHead span{font-size:12px!important}
+.caseBadge{font-size:12px!important;padding:6px 10px}
+.caseObjects{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
+.caseObjects>div{padding:10px;min-height:76px}
+.caseObjects b{font-size:13px!important}
+.caseObjects span{font-size:12px!important;line-height:1.55!important;color:#a9bfd2!important}
+.caseBox button{font-size:12px!important;padding:8px 10px!important}
+.entryTfChecks label{font-size:12px!important}
+.caseMiniHead{font-size:13px!important}
+.caseMiniHead span{font-size:12px!important}
+.caseMiniBody{height:300px}
+
+.judgementGuide{
+  border:1px solid #29455d;background:#0c1824;border-radius:8px;
+  padding:10px;color:#aec3d5;margin-top:8px
+}
+.judgementGuide b{color:#e8f2fa}
+
+.researchSplit{grid-template-columns:minmax(560px,1.08fr) minmax(600px,.92fr)!important;align-items:start}
+.candidatePane,.insightPane{min-height:650px}
+.researchPaneHead{display:flex;justify-content:space-between;gap:12px;margin-bottom:9px}
+.researchPaneHead span{display:block;color:#93abc0;font-size:12px;line-height:1.55}
+
+.caseCandidateList{max-height:760px!important;gap:10px!important;padding-right:5px}
+.caseEntry{
+  padding:12px!important;border-radius:10px!important;background:#0b1722!important;
+}
+.caseEntryTop b{font-size:14px!important;line-height:1.45}
+.caseEntryTop strong{font-size:22px!important}
+.caseEntryMeta,.caseEntryRisk{font-size:12px!important;line-height:1.55!important;margin-top:6px!important}
+.caseEntryTags{gap:6px!important;margin-top:8px!important}
+.caseEntryTags span{font-size:11px!important;padding:4px 7px!important}
+.caseEntryActions{display:block!important;margin-top:10px!important}
+.caseEntryActions button{font-size:12px!important;padding:7px 9px!important}
+
+.tradeJudgeBox{
+  border-top:1px solid #21384c;margin-top:10px;padding-top:10px
+}
+.tradeJudgeTitle{font-size:12px;font-weight:700;color:#d9e8f5;margin-bottom:7px}
+.tradeJudgeButtons{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.tradeJudgeButtons button{
+  border:1px solid #31506a;background:#101e2c;color:#d4e3ef;border-radius:6px;padding:7px 5px;font-size:11px;cursor:pointer
+}
+.tradeJudgeButtons button.active[data-judge="strong_long"]{background:#594173;border-color:#a77bd1}
+.tradeJudgeButtons button.active[data-judge="long"]{background:#1f654b;border-color:#58b88b}
+.tradeJudgeButtons button.active[data-judge="wait"]{background:#705b20;border-color:#d7b548}
+.tradeJudgeButtons button.active[data-judge="no_trade"]{background:#5f373b;border-color:#b7656c}
+.tradeJudgeButtons button.active[data-judge="reverse_watch"]{background:#6b2734;border-color:#d35268}
+.judgeSummary{font-size:12px;color:#9fb5c8;margin-top:7px}
+.judgeExpand{margin-top:8px;border:1px solid #263f54;background:#09131d;border-radius:8px;padding:9px}
+.judgeExpand.hidden{display:none}
+.judgeGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.judgeGrid label{font-size:12px}
+.judgeGrid select,.judgeGrid input,.judgeGrid textarea{width:100%;margin-top:4px;background:#07111a;color:#e3edf5;border:1px solid #29465e;border-radius:6px;padding:7px}
+.judgeGrid textarea{min-height:70px;resize:vertical}
+.judgeChecks{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.judgeChecks label{display:flex;align-items:center;gap:4px;border:1px solid #2c485f;border-radius:14px;padding:4px 7px;font-size:11px}
+.judgeChecks input{width:auto;margin:0}
+.confidenceRow{display:flex;align-items:center;gap:8px}.confidenceRow input{flex:1}.confidenceValue{min-width:34px;text-align:right;font-weight:700}
+.saveJudge{margin-top:8px;border:1px solid #3879ba;background:#256ed1;color:white;border-radius:6px;padding:8px 12px;font-size:12px}
+
+.researchTabs{display:flex;gap:6px;border-bottom:1px solid #274158;padding-bottom:7px;margin-bottom:10px;flex-wrap:wrap}
+.researchTab,.draftTab{font-size:12px;border:1px solid #29465e;background:#0e1b28;color:#b9cddd;border-radius:6px;padding:7px 10px}
+.researchTab.active,.draftTab.active{background:#256ed1;color:#fff;border-color:#4388d4}
+.researchTabPanel.hidden{display:none}
+.caseEntryDetail{
+  font-size:12px!important;line-height:1.65!important;padding:11px!important;min-height:570px;
+  max-height:720px;overflow:auto
+}
+.detailSection{border-bottom:1px solid #21384b;padding:9px 0}
+.detailSection:last-child{border-bottom:0}
+.detailSection h5{font-size:13px;margin:0 0 6px;color:#e4eef6}
+.detailGrid{display:grid;grid-template-columns:1fr 1fr;gap:5px 12px}
+.detailKV{display:flex;justify-content:space-between;gap:10px;font-size:12px}
+.detailKV span:first-child{color:#8fa7bb}
+.detailKV span:last-child{color:#e1edf5;text-align:right}
+.detailPills{display:flex;gap:6px;flex-wrap:wrap}.detailPills span{font-size:11px;border:1px solid #2b475f;border-radius:14px;padding:4px 7px}
+.detailCallout{border:1px solid #4e667c;background:#0c1a27;border-radius:8px;padding:9px;margin-top:8px;font-size:12px}
+.detailCallout.ideal{border-color:#72578d;background:#140f1d}
+.detailCallout.wait{border-color:#7a6528;background:#18150d}
+
+.judgementTimeline{font-size:12px;max-height:720px;overflow:auto}
+.timelineItem{display:grid;grid-template-columns:130px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid #21384b}
+.timelineTime{color:#91a8bb}.timelineBody b{font-size:13px}.timelineTags{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}.timelineTags span{font-size:11px;border:1px solid #2e4b64;border-radius:12px;padding:3px 6px}
+.timelineTransition{margin:8px 0;border-left:3px solid #d4b34b;background:#17150e;padding:8px 10px;font-size:12px;color:#d7c57f}
+
+#caseExplanation{font-size:12px!important;max-height:720px!important}
+#caseExplanation table{font-size:12px!important}
+#caseExplanation th,#caseExplanation td{padding:7px!important}
+.caseExplainNote{font-size:12px!important;line-height:1.6!important}
+
+.idealZoneSummary b{font-size:13px!important}
+.idealZoneSummary span{font-size:12px!important}
+.idealZoneSummary em{font-size:11px!important;padding:4px 7px!important}
+
+.draftHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.draftTabs{display:flex;gap:6px}
+.caseDraftExplain{
+  font-size:12px;line-height:1.7;background:#08131d;border:1px solid #20374b;border-radius:8px;padding:12px;min-height:180px
+}
+.caseDraftBox pre{font-size:11px!important;line-height:1.55!important;min-height:180px}
+.caseDraftBox pre.hidden{display:none}
+.strategySection{border-bottom:1px solid #21384b;padding:8px 0}.strategySection:last-child{border-bottom:0}
+.strategySection h5{font-size:13px;margin:0 0 6px;color:#e5eff7}
+.strategyList{margin:0;padding-left:18px}.strategyList li{margin:4px 0}
+
+@media(max-width:1450px){
+  .researchSplit{grid-template-columns:1fr!important}
+  .candidatePane,.insightPane{min-height:auto}
+  .caseEntryDetail{min-height:420px}
+}
+@media(max-width:900px){
+  .tradeJudgeButtons{grid-template-columns:1fr 1fr}
+  .judgeGrid,.detailGrid{grid-template-columns:1fr}
+}

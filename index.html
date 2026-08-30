@@ -105,7 +105,7 @@
   
   <div id="structureEntryLab" class="panel structureCaseLab">
     <div class="sectionHead">
-      <div><h3>Structure Case · 结构条件化买点研究室</h3><span>母结构全局固定；周期只是不同分辨率的观察窗口</span></div>
+      <div><h3>结构案例 · 条件化买点研究室</h3><span>母结构全局固定；周期只是不同分辨率的观察窗口</span></div>
       <div id="caseLockBadge" class="caseBadge">尚未建立 Structure Case</div>
     </div>
 
@@ -113,11 +113,11 @@
       <section class="caseBox">
         <h4>① 锁定母结构</h4>
         <div class="caseObjects"><div id="caseTrend"></div><div id="caseHorizontal"></div><div id="caseZone"></div><div id="caseIdealZone"></div></div>
-        <button id="lockSelectedStructure">把当前选中线锁入 Case</button>
-        <button id="selectCaseZone" class="primary">在当前周期拖选 Entry Research Zone</button>
-        <button id="selectIdealZone">★ 在当前周期拖选我的理想买点区间</button>
+        <button id="lockSelectedStructure">锁定当前结构线</button>
+        <button id="selectCaseZone" class="primary">选择买点研究区间</button>
+        <button id="selectIdealZone">★ 选择理想买点区间</button>
         <button id="clearIdealZone">清空理想买点区间</button>
-        <button id="resetStructureCase" class="danger">清空 Case</button>
+        <button id="resetStructureCase" class="danger">清空当前案例</button>
         <div class="mutedNote">趋势线/水平线保持原规格；Entry Research Zone 和 Ideal Entry Zone 都按绝对时间保存，可在任意周期选择并跨周期原样投影。</div>
       </section>
 
@@ -130,50 +130,77 @@
           <label><input type="checkbox" value="5m" checked>5m</label>
           <label><input type="checkbox" value="1m" checked>1m</label>
         </div>
-        <button id="scanCaseEntries" class="primary">扫描当前 Case 低周期买点</button>
+        <button id="scanCaseEntries" class="primary">扫描当前案例低周期买点</button>
         <div id="caseStatus" class="caseStatus">先锁定 8H 趋势线、水平线和 Entry Zone。</div>
       </section>
 
       <section class="caseBox">
-        <h4>③ 人工评价</h4>
-        <label>拒绝原因
-          <select id="rejectReasonV7">
-            <option>太早</option><option>太晚</option><option>低周期结构不成立</option>
-            <option>高周期仍不安全</option><option>回调太深</option><option>没有真正止跌</option>
-            <option>衍生品数据不支持</option><option>盈亏比不好</option><option>其他</option>
-          </select>
-        </label>
+        <h4>③ 人工交易判断</h4>
         <div class="caseCounts">机器候选 <b id="caseCandidateCount">0</b> · 理想区间命中 <b id="caseIdealCount">0</b></div>
-        <div class="mutedNote">理想买点是一个时间窗口，不再要求精确到某一根 K 线。扫描不会自动寻找历史相似结构。</div>
+        <div class="judgementGuide">
+          人工判断已经并入下方每一张候选卡：<b>强烈做多 / 可以做多 / 等待 / 不做 / 反向观察</b>。
+          时间位置由系统自动判断为“太早 / 命中理想区间 / 太晚”，不再让你重复填写。
+        </div>
       </section>
 
       <section class="caseBox">
-        <h4>④ 当前 Case 草案</h4>
-        <button id="generateCaseDraft">生成当前 Case Entry Rule 草案</button>
-        <div class="mutedNote">输出只标记为 CURRENT_CASE_EXPLANATION_ONLY，不声明泛化能力或有效 Alpha。</div>
+        <h4>④ 当前案例草案</h4>
+        <button id="generateCaseDraft">生成当前案例入场规则草案</button>
+        <div class="mutedNote">输出只标记为 仅当前案例解释，不声明泛化能力或有效 Alpha。</div>
       </section>
     </div>
 
     <div id="caseMiniCharts" class="caseMiniCharts"></div>
 
-    <div class="caseResearchGrid">
-      <section class="caseResearchBox">
-        <h4>买点形成阶梯 · 由你评价</h4>
-        <div id="caseEntryDetail" class="caseEntryDetail">L1 下跌衰竭 → L2 HL → L3 BOS → L4 HL+BOS → L5 Reclaim+HL+BOS</div>
+    <div class="caseResearchGrid researchSplit">
+      <section class="caseResearchBox candidatePane">
+        <div class="researchPaneHead">
+          <div>
+            <h4>买点形成阶梯 · 机器候选 + 人工交易判断</h4>
+            <span>L1 下跌衰竭 → L2 抬高低点（HL）→ L3 结构突破（BOS）→ L4 HL+BOS → L5 重新收复+HL+BOS</span>
+          </div>
+        </div>
         <div id="caseCandidateList" class="caseCandidateList">尚未扫描。</div>
       </section>
 
-      <section class="caseResearchBox">
-        <h4>我的理想买点区间</h4>
-        <div id="idealEntryList">还没有选择理想买点区间。</div>
-        <h4 class="subHead">当前 Structure Case · 买点解释因子</h4>
-        <div id="caseExplanation">先扫描候选，再由你评价合理/不合理。</div>
+      <section class="caseResearchBox insightPane">
+        <div class="researchTabs">
+          <button class="researchTab active" data-tab="detail">当前买点详情</button>
+          <button class="researchTab" data-tab="timeline">判断演化时间轴</button>
+          <button class="researchTab" data-tab="factors">买点解释因子</button>
+          <button class="researchTab" data-tab="ideal">理想买点区间</button>
+        </div>
+
+        <div id="tabDetail" class="researchTabPanel">
+          <div id="caseEntryDetail" class="caseEntryDetail">
+            点击左侧任意候选买点，这里会展示高周期结构、低周期状态、价格行为、衍生品过程、风险与人工判断。
+          </div>
+        </div>
+
+        <div id="tabTimeline" class="researchTabPanel hidden">
+          <div id="judgementTimeline" class="judgementTimeline">尚未形成判断时间轴。</div>
+        </div>
+
+        <div id="tabFactors" class="researchTabPanel hidden">
+          <div id="caseExplanation">先扫描候选，再选择理想区间或进行人工交易判断。</div>
+        </div>
+
+        <div id="tabIdeal" class="researchTabPanel hidden">
+          <div id="idealEntryList">还没有选择理想买点区间。</div>
+        </div>
       </section>
     </div>
 
     <section class="caseResearchBox caseDraftBox">
-      <h4>当前 Case 策略草案</h4>
-      <pre id="caseDraft">尚未生成。</pre>
+      <div class="draftHead">
+        <h4>当前案例 · 入场规则草案</h4>
+        <div class="draftTabs">
+          <button class="draftTab active" data-draft-tab="explain">策略解释</button>
+          <button class="draftTab" data-draft-tab="json">原始 JSON</button>
+        </div>
+      </div>
+      <div id="caseDraftExplain" class="caseDraftExplain">尚未生成。完成扫描和人工判断后点击“生成当前案例入场规则草案”。</div>
+      <pre id="caseDraft" class="hidden">尚未生成。</pre>
     </section>
   </div>
 

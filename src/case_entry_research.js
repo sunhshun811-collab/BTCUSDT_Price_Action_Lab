@@ -162,7 +162,7 @@ export function scanCaseTf(rows,tf,structureCase,ctx=[]){
 export function explainCase(candidates,feedback={}){
   const fields=[
     ['level','买点确认层级'],
-    ['bosStrengthAtr','BOS强度'],
+    ['bosStrengthAtr','结构突破（BOS）强度'],
     ['downsideEfficiencyChange','下跌衰竭改善'],
     ['lowerWickRatio','下影线比例'],
     ['volumeAsymmetry','上涨/下跌成交量比'],
@@ -170,10 +170,10 @@ export function explainCase(candidates,feedback={}){
     ['horizontalDistanceAtr','距水平线ATR'],
     ['trendlineDistanceAtr','距趋势线ATR'],
     ['undercutDepthAtr','水平位下穿深度'],
-    ['funding_z7d','Funding 7日Z'],
-    ['basis_bps_z7d','Basis 7日Z'],
-    ['oi_change_1h','OI 1h变化'],
-    ['taker_ls_ratio','Taker L/S']
+    ['funding_z7d','资金费率 7日Z'],
+    ['basis_bps_z7d','基差（Basis）7日Z'],
+    ['oi_change_1h','持仓量（OI）1小时变化'],
+    ['taker_ls_ratio','主动买卖比（Taker L/S）']
   ];
   const A=candidates.filter(c=>feedback[c.id]?.verdict==='accept');
   const R=candidates.filter(c=>feedback[c.id]?.verdict==='reject');
@@ -205,10 +205,10 @@ export function explainIdealZone(candidates,idealZone){
   const inside=candidates.filter(x=>classifyByIdealZone(x,idealZone)==='IN_IDEAL_ZONE');
   const outside=candidates.filter(x=>classifyByIdealZone(x,idealZone)!=='IN_IDEAL_ZONE');
   const fields=[
-    ['level','买点确认层级'],['bosStrengthAtr','BOS强度'],['downsideEfficiencyChange','下跌衰竭改善'],
+    ['level','买点确认层级'],['bosStrengthAtr','结构突破（BOS）强度'],['downsideEfficiencyChange','下跌衰竭改善'],
     ['lowerWickRatio','下影线比例'],['volumeAsymmetry','上涨/下跌成交量比'],['compression','波动压缩'],
     ['horizontalDistanceAtr','距水平线ATR'],['trendlineDistanceAtr','距趋势线ATR'],['undercutDepthAtr','水平位下穿深度'],
-    ['funding_z7d','Funding 7日Z'],['basis_bps_z7d','Basis 7日Z'],['oi_change_1h','OI 1h变化'],['taker_ls_ratio','Taker L/S']
+    ['funding_z7d','资金费率 7日Z'],['basis_bps_z7d','基差（Basis）7日Z'],['oi_change_1h','持仓量（OI）1小时变化'],['taker_ls_ratio','主动买卖比（Taker L/S）']
   ];
   const out=[];
   for(const [key,label] of fields){
