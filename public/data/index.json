@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "symbol": "BTCUSDT",
+  "market": "Binance USD-M Perpetual",
+  "display_timezone": "Asia/Shanghai",
+  "start": "2026-01-01T00:00:00Z",
+  "generated_at_utc": null,
+  "timeframes": {
+    "8h": [],
+    "4h": [],
+    "1h": [],
+    "15m": [],
+    "5m": [],
+    "1m": []
+  }
+}

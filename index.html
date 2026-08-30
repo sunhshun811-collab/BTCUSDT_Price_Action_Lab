@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#08111c" />
+  <title>BTCUSDT Price Action Lab</title>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div>
+        <div class="brand">BTCUSDT Price Action Lab</div>
+        <div class="subtitle">永续合约 · 多周期市场结构与图形策略实验室</div>
+      </div>
+      <div class="badges"><span>北京时间 UTC+8</span><span>交互式研究</span><span>非实盘下单</span></div>
+    </header>
+
+    <nav class="modebar">
+      <button class="mode active" data-mode="editor">主图编辑</button>
+      <button class="mode" data-mode="overview">六周期总览</button>
+      <button class="mode" data-mode="labels">人工教学数据</button>
+    </nav>
+
+    <main>
+      <section id="editorView">
+        <div class="workspace">
+          <aside class="leftPanel panel">
+            <h3>图表</h3>
+            <label>周期
+              <select id="timeframe">
+                <option value="8h">8小时</option><option value="4h">4小时</option>
+                <option value="1h">1小时</option><option value="15m">15分钟</option>
+                <option value="5m">5分钟</option><option value="1m">1分钟</option>
+              </select>
+            </label>
+            <label>数据范围
+              <select id="rangeMode"><option value="all">2026至今</option><option value="month">单月</option></select>
+            </label>
+            <label>月份<select id="month"></select></label>
+            <div class="toolTitle">画图工具</div>
+            <div class="toolGrid">
+              <button id="toolSelect" class="tool active">选择</button>
+              <button id="toolTrend" class="tool">趋势线</button>
+              <button id="toolHorizontal" class="tool">水平位</button>
+              <button id="undoDrawing" class="tool">撤销</button>
+              <button id="clearDrawings" class="tool danger">清空本周期</button>
+            </div>
+            <label class="check"><input id="extendRay" type="checkbox" checked /> 趋势线向右延伸</label>
+            <div class="hint">趋势线：依次点击两个锚点。图线按周期独立保存到浏览器，不会改原始K线。</div>
+
+            <h3>当前光标</h3>
+            <div id="cursorInfo" class="infoBox">移动鼠标或点击K线查看。</div>
+
+            <h3>人工判断</h3>
+            <label>置信度 <span id="confidenceText">80</span>
+              <input id="confidence" type="range" min="50" max="100" value="80" />
+            </label>
+            <div class="labelGrid">
+              <button data-label="2" class="bull2">强烈做多</button>
+              <button data-label="1" class="bull1">偏多</button>
+              <button data-label="0" class="flat">不交易</button>
+              <button data-label="-1" class="bear1">偏空</button>
+              <button data-label="-2" class="bear2">强烈做空</button>
+            </div>
+            <textarea id="labelNote" rows="3" placeholder="可选：为什么这个位置明显？"></textarea>
+            <button id="saveLabel" class="primary">保存这个判断</button>
+          </aside>
+
+          <section class="mainArea">
+            <div class="chartHeader panel">
+              <div><strong id="chartTitle">BTCUSDT · 8小时</strong><span id="dataStatus"></span></div>
+              <div class="chartHint">缩放/拖动由图表原生支持；所有显示时间为北京时间</div>
+            </div>
+            <div id="chartWrap" class="panel chartWrap"><div id="chart"></div></div>
+
+            <div class="panel strategyPanel">
+              <div class="sectionHead">
+                <div><h3>策略草稿台</h3><span>用于交互式探索，不是正式OOS回测</span></div>
+                <button id="runPreview" class="primary">运行当前图形评分预览</button>
+              </div>
+              <div class="strategyControls">
+                <label>趋势/均线权重 <input id="wTrend" type="range" min="0" max="3" step=".1" value="1.2"><b id="vTrend">1.2</b></label>
+                <label>前高/前低突破权重 <input id="wBreakout" type="range" min="0" max="3" step=".1" value="1.5"><b id="vBreakout">1.5</b></label>
+                <label>成交量确认权重 <input id="wVolume" type="range" min="0" max="3" step=".1" value=".8"><b id="vVolume">0.8</b></label>
+                <label>交易置信阈值 <input id="scoreThreshold" type="range" min=".2" max=".95" step=".05" value=".7"><b id="vThreshold">0.70</b></label>
+              </div>
+              <div id="strategyResult" class="strategyResult">点击“运行当前图形评分预览”。</div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="overviewView" class="hidden">
+        <div class="panel overviewHeader">
+          <div><strong>六周期同步总览</strong><span>同一个北京时间月份，同时观察 8H → 4H → 1H → 15m → 5m → 1m</span></div>
+          <label>月份<select id="overviewMonth"></select></label>
+        </div>
+        <div id="overviewGrid" class="overviewGrid"></div>
+      </section>
+
+      <section id="labelsView" class="hidden">
+        <div class="panel labelsPanel">
+          <div class="sectionHead">
+            <div><h3>人工教学数据</h3><span>把你的“盘感”保存成可学习标签，而不是硬塞成死规则。</span></div>
+            <div><button id="exportLabels" class="primary">导出标签 JSON</button><button id="exportDrawings">导出趋势线 JSON</button></div>
+          </div>
+          <div id="labelStats"></div>
+          <div class="tableWrap"><table id="labelsTable"></table></div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>BTCUSDT Price Action Lab · 研究用途，不构成交易建议。</span>
+      <span>Charts powered by <a href="https://www.tradingview.com/" target="_blank" rel="noreferrer">TradingView Lightweight Charts™</a>.</span>
+    </footer>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
