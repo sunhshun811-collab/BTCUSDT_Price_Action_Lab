@@ -19,3 +19,8 @@ footer{display:flex;justify-content:space-between;gap:10px;color:#6f849a;font-si
 .ctxK{font-size:8px;color:var(--muted)}.ctxV{font-size:14px;font-weight:800;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ctxS{font-size:8px;color:#7f96ab;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .contextGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px}.contextGrid canvas{width:100%;height:150px;border:1px solid var(--line);border-radius:8px;background:#0a131d}.contextNote{font-size:9px;color:var(--muted);margin-top:7px}
 @media(max-width:1300px){.contextCards{grid-template-columns:repeat(4,1fr)}}@media(max-width:800px){.contextCards{grid-template-columns:repeat(2,1fr)}.contextGrid{grid-template-columns:1fr}}
+
+.rangeGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.rangeGrid button{border:1px solid var(--line);background:#111e2b;color:#c9d7e5;padding:7px 4px;border-radius:7px;font-size:9px}.rangeGrid button.active{background:#24456a;border-color:#5798dc;color:white}
+.dateGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.dateGrid label{margin:7px 0!important}.dateGrid input{min-width:0;width:100%;background:#09131d;color:#e7f1fb;border:1px solid var(--line);border-radius:7px;padding:6px;font-size:9px}
+.tool.wide{width:100%}.tool:disabled{opacity:.35;cursor:not-allowed}.tool.selected{border-color:#5bb2ff;background:#17395a}
+#drawingInfo{margin-top:8px}.snapTag{display:inline-block;padding:2px 5px;border-radius:4px;background:#17334d;color:#83c5ff;margin-left:4px}

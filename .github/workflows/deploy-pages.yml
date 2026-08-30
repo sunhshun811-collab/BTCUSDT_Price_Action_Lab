@@ -1,14 +1,18 @@
-name: Build Binance Cloud Trial + Deploy Pages
+name: Build Binance 12M Lab + Deploy Pages
 
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
     inputs:
-      month:
-        description: "Trial month YYYY-MM; blank = previous complete UTC month"
+      months_back:
+        description: "Complete calendar months of Binance Klines"
         required: false
-        default: ""
+        default: "12"
+      metrics_days:
+        description: "Recent days of Binance Futures Metrics"
+        required: false
+        default: "90"
   schedule:
     - cron: "23 4 3 * *"
 
@@ -31,15 +35,26 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Build trial market dataset from Binance public archives
+      - name: Restore Binance public archive cache
+        uses: actions/cache@v4
+        with:
+          path: .cache/binance
+          key: ${{ runner.os }}-binance-palab-v2-${{ github.run_number }}
+          restore-keys: |
+            ${{ runner.os }}-binance-palab-v2-
+
+      - name: Build 12-month Binance market dataset
         shell: bash
         run: |
-          MONTH="${{ github.event.inputs.month }}"
-          if [ -n "$MONTH" ]; then
-            python scripts/build_binance_cloud_trial.py --month "$MONTH" --output public/data
-          else
-            python scripts/build_binance_cloud_trial.py --output public/data
-          fi
+          MONTHS="${{ github.event.inputs.months_back }}"
+          METRICS="${{ github.event.inputs.metrics_days }}"
+          [ -z "$MONTHS" ] && MONTHS="12"
+          [ -z "$METRICS" ] && METRICS="90"
+          python scripts/build_binance_cloud_history.py \
+            --months-back "$MONTHS" \
+            --metrics-days "$METRICS" \
+            --output public/data \
+            --cache .cache/binance
 
       - uses: actions/setup-node@v4
         with:

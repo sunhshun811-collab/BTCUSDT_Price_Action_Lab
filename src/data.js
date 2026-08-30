@@ -13,23 +13,24 @@ async function ungzipJson(url){
   const stream=r.body.pipeThrough(new DecompressionStream('gzip'));
   return JSON.parse(await new Response(stream).text());
 }
-export async function loadMonth(tf,month){
-  return ungzipJson(`${BASE}${tf}/${month}.json.gz`);
-}
+export async function loadMonth(tf,month){ return ungzipJson(`${BASE}${tf}/${month}.json.gz`); }
 export async function loadMonths(tf,months){
   const chunks=[];
-  for(const m of months){ const x=await loadMonth(tf,m); chunks.push(...(x.rows||[])); }
+  for(const m of months){const x=await loadMonth(tf,m);chunks.push(...(x.rows||[]))}
   chunks.sort((a,b)=>a[0]-b[0]);
   return chunks;
 }
-export function toCandleRows(rows){
-  return rows.map(r=>({time:r[0],open:r[1],high:r[2],low:r[3],close:r[4]}));
+export async function loadContext(month){ return ungzipJson(`${BASE}context/${month}.json.gz`); }
+export async function loadContexts(months){
+  const out=[];
+  for(const m of months){
+    try{const x=await loadContext(m);out.push(...(x.rows||[]))}catch(e){console.warn('context',m,e)}
+  }
+  out.sort((a,b)=>a.time-b.time);
+  return {rows:out};
 }
+export function toCandleRows(rows){return rows.map(r=>({time:r[0],open:r[1],high:r[2],low:r[3],close:r[4]}))}
 export function toVolumeRows(rows){
-  return rows.map(r=>({time:r[0],value:r[5],color:r[4]>=r[1]?'rgba(47,209,139,.45)':'rgba(255,100,112,.45)'}));
-}
-
-
-export async function loadContext(month){
-  return ungzipJson(`${BASE}context/${month}.json.gz`);
+  // Chinese market convention: red = up, green = down.
+  return rows.map(r=>({time:r[0],value:r[5],color:r[4]>=r[1]?'rgba(239,83,80,.50)':'rgba(38,166,154,.50)'}));
 }
