@@ -4,6 +4,8 @@ import {
   TF_SECONDS,TF_ORDER,getStrategyVersion,setStrategyVersion,getCases,saveCase,
   computeFeatures,nearestContext,marketStage,setupClarity,similarCases,outcomeFrom1m,makeCaseId
 } from './research.js';
+import {getDrawings} from './annotations.js';
+import {eligibleTrendlineFeatures,trendlineConfluence} from './trendline_research.js';
 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const LABEL={2:'强烈做多',1:'偏多',0:'不交易','-1':'偏空','-2':'强烈做空'};
@@ -42,9 +44,11 @@ async function buildSnapshot(decisionTime){
     const months=adjacentMonths(all,decisionTime,2,0);
     const rows=months.length?await loadMonths(tf,months):[];
     timeframes[tf]=computeFeatures(rows,tf,decisionTime);
+    timeframes[tf].trendlines=eligibleTrendlineFeatures(getDrawings(),rows,tf,decisionTime);
   }
   const context=nearestContext(api.fullContextRows(),decisionTime);
   const snapshot={decisionTime,timeframes,context};
+  snapshot.trendlineConfluence=trendlineConfluence(snapshot);
   snapshot.stage=marketStage(snapshot);snapshot.clarity=setupClarity(snapshot);
   return snapshot;
 }
@@ -61,10 +65,12 @@ function renderSnapshot(s){
     if(!f?.available)return `<div class="tfSnap"><b>${tf}</b><span>数据不足</span></div>`;
     const st=f.structure||{};
     const struct=st.hh&&st.hl?'HH+HL':st.lh&&st.ll?'LH+LL':st.hh?'HH':st.hl?'HL':st.lh?'LH':st.ll?'LL':'混合';
-    return `<div class="tfSnap"><b>${tf}</b><span>${struct}</span><em>Trend ${fmtN(f.trendAtr,2)} ATR</em><em>清晰度 ${fmtN(f.clarity,0)}</em></div>`;
+    const tl=f.trendlines?.closest;
+    const tlText=tl?`TL ${fmtN(tl.distanceAtr,2)} ATR · Q${fmtN(tl.quality,0)}`:'无因果趋势线';
+    return `<div class="tfSnap"><b>${tf}</b><span>${struct}</span><em>Trend ${fmtN(f.trendAtr,2)} ATR</em><em>${tlText}</em><em>清晰度 ${fmtN(f.clarity,0)}</em></div>`;
   }).join('');
-  const c=s.context||{};
-  $('#snapshotContext').innerHTML=`Funding Z7d ${fmtN(c.funding_z7d)} · Basis Z7d ${fmtN(c.basis_bps_z7d)} · OI 1h ${fmtP(c.oi_change_1h)} · Taker L/S ${fmtN(c.taker_ls_ratio,3)}`;
+  const c=s.context||{},tc=s.trendlineConfluence||{};
+  $('#snapshotContext').innerHTML=`Funding Z7d ${fmtN(c.funding_z7d)} · Basis Z7d ${fmtN(c.basis_bps_z7d)} · OI 1h ${fmtP(c.oi_change_1h)} · Taker L/S ${fmtN(c.taker_ls_ratio,3)} · 趋势线共振 ${tc.count||0}`;
   renderSimilar();
 }
 function renderSimilar(){
@@ -95,6 +101,7 @@ async function startBlind(){
   const frozen=blind.fullRows.filter(r=>r[0]<=p.row[0]);
   const frozenCtx=blind.fullContext.filter(x=>x.time<=p.decisionTime);
   api.showReplayRows(frozen,frozenCtx);
+  window.dispatchEvent(new CustomEvent('palab:replay-state',{detail:{active:true,decisionTime:p.decisionTime,futureRevealed:false}}));
   $('#blindStatus').textContent=`未来已冻结：决策时点 ${api.fmtBJ(p.decisionTime,true)}`;
   $('#revealFuture').disabled=false;$('#saveResearchCase').disabled=false;
   $('#outcomeTable').innerHTML='未来仍被隐藏。先做判断，再点击“显示未来”。';
@@ -103,6 +110,7 @@ async function startBlind(){
 async function reveal(){
   if(!blind)return;
   api.showReplayRows(blind.fullRows,blind.fullContext);
+  window.dispatchEvent(new CustomEvent('palab:replay-state',{detail:{active:true,decisionTime:blind.decisionTime,futureRevealed:true}}));
   const d=directionValue()||1,o=await computeOutcome(blind.decisionTime,d);renderOutcome(o);
   $('#blindStatus').textContent=`未来已显示 · 决策时点 ${api.fmtBJ(blind.decisionTime,true)}`;
 }
@@ -141,6 +149,8 @@ export function initResearchUI(x){
   $$('.researchDirection button').forEach(b=>b.onclick=()=>{document.body.dataset.researchDirection=b.dataset.dir;$$('.researchDirection button').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
 }
 export function researchDataChanged(){
-  if(!api)return;blind=null;lastSnapshot=null;lastOutcome=null;$('#revealFuture').disabled=true;$('#saveResearchCase').disabled=true;
+  if(!api)return;blind=null;lastSnapshot=null;lastOutcome=null;
+  window.dispatchEvent(new CustomEvent('palab:replay-state',{detail:{active:false,decisionTime:null,futureRevealed:false}}));
+  $('#revealFuture').disabled=true;$('#saveResearchCase').disabled=true;
   $('#blindStatus').textContent='尚未开始 Blind Replay。';$('#tfSnapshot').innerHTML='';$('#stageProb').innerHTML='';$('#outcomeTable').innerHTML='';
 }

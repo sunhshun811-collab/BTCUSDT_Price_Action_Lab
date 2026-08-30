@@ -51,7 +51,7 @@
     <select id="trendMode"><option value="ray">趋势射线</option><option value="segment">线段</option><option value="infinite">无限直线</option></select>
   </label>
   <label>磁吸
-    <select id="snapMode"><option value="weak">弱磁吸</option><option value="off">关闭</option><option value="strong">强磁吸</option></select>
+    <select id="snapMode"><option value="structure">结构磁吸（默认）</option><option value="weak">OHLC弱磁吸</option><option value="strong">OHLC强磁吸</option><option value="off">关闭</option></select>
   </label>
   <div class="toolGrid">
     <button id="resetAnchorA" class="tool" disabled>重设锚点 A</button>
@@ -59,7 +59,8 @@
     <button id="deleteSelected" class="tool danger" disabled>删除选中线</button>
     <button id="clearDrawings" class="tool danger">清空本周期</button>
   </div>
-  <div id="drawingInfo" class="infoBox">选择趋势线后可重设锚点。画线时第一个锚点确定后，移动鼠标会实时预览。</div>
+  <label class="check"><input id="showHigherTfTrendlines" type="checkbox" checked> 显示高周期趋势线</label>
+  <div id="drawingInfo" class="infoBox">结构磁吸会优先寻找附近显著 Swing High / Swing Low。选中趋势线后可纳入研究。</div>
 
   <h3>当前光标</h3>
   <div id="cursorInfo" class="infoBox">移动鼠标或点击K线查看。</div>
@@ -81,7 +82,33 @@
   </div>
   <div id="chartWrap" class="panel chartWrap"><div id="chart"></div></div>
 
-  <div class="panel contextPanel">
+  
+  <div class="panel trendInspector">
+    <div class="sectionHead">
+      <div><h3>趋势线研究对象</h3><span>确认后的趋势线会产生 Touch / Break / Retest 等可量化事件</span></div>
+      <div id="trendResearchBadge" class="trendBadge">未选择趋势线</div>
+    </div>
+    <div class="trendInspectorGrid">
+      <div class="trendControls">
+        <label>角色
+          <select id="trendRole"><option value="auto">自动判断</option><option value="support">支撑趋势线</option><option value="resistance">阻力趋势线</option></select>
+        </label>
+        <label>趋势线区域宽度（ATR）
+          <input id="trendZoneAtr" type="number" min="0.05" max="1.5" step="0.05" value="0.25">
+        </label>
+        <button id="confirmTrendlineResearch" class="primary" disabled>确认纳入研究</button>
+        <button id="excludeTrendlineResearch" disabled>仅画图，不纳入研究</button>
+      </div>
+      <div id="trendMetrics" class="trendMetrics">选择一根趋势线查看质量、生命周期和事件。</div>
+      <div>
+        <h4>最近事件</h4>
+        <div id="trendEvents" class="trendEvents">—</div>
+      </div>
+    </div>
+    <div class="mutedNote">因果保护：只有在 Blind Replay 尚未显示未来时确认/创建的趋势线，才会进入正式 Feature Snapshot；完整历史图上画的线只能用于描述和人工研究，避免未来函数。</div>
+  </div>
+
+<div class="panel contextPanel">
     <div class="sectionHead">
       <div><h3>Binance 永续衍生品上下文</h3><span>与主图十字光标联动 · Funding / OI / Basis / Positioning</span></div>
       <span class="ctxSource">K线：Binance USD-M BTCUSDT</span>

@@ -131,7 +131,10 @@ export function setupClarity(snapshot){
   }
   if(finite(c.taker_ls_ratio)){deriv+=clamp(Math.abs(Math.log(Math.max(Number(c.taker_ls_ratio),1e-6)))/.8,0,1);n++}
   const d=n?deriv/n:0;
-  return clamp(base*.88+d*12,0,100);
+  const tl=TF_ORDER.map(tf=>snapshot.timeframes?.[tf]?.trendlines?.closest?.quality).filter(finite);
+  const tlq=tl.length?(mean(tl)||0):0;
+  const confluence=Number(snapshot.trendlineConfluence?.count||0);
+  return clamp(base*.78+d*10+tlq*.08+Math.min(confluence,3)*1.4,0,100);
 }
 export function flattenSnapshot(snapshot){
   const a=[];
@@ -141,6 +144,9 @@ export function flattenSnapshot(snapshot){
     a.push(finite(f.structure?.score)?f.structure.score:0);
     a.push(finite(f.rangePosition60)?(f.rangePosition60-.5)*2:0);
     a.push(finite(f.volumeRatio20)?tanh(Math.log(Math.max(f.volumeRatio20,1e-6))):0);
+    const tl=f.trendlines?.closest;
+    a.push(finite(tl?.distanceAtr)?tanh(tl.distanceAtr):0);
+    a.push(finite(tl?.quality)?Number(tl.quality)/100:0);
   }
   const c=snapshot.context||{};
   a.push(finite(c.funding_z7d)?tanh(c.funding_z7d/2):0);
