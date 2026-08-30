@@ -17,7 +17,7 @@ export function drawingsForView(tf,includeHigher=true){
   const rank=TF_RANK[tf]??99;
   return getDrawings().filter(x=>{
     if(x.timeframe===tf)return true;
-    if(!includeHigher || x.type!=='trend')return false;
+    if(!includeHigher || !['trend','horizontal'].includes(x.type))return false;
     return (TF_RANK[x.timeframe]??99)<rank;
   });
 }

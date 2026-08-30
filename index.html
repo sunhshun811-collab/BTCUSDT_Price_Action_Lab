@@ -100,94 +100,77 @@
   <div id="chartWrap" class="panel chartWrap"><div id="chart"></div><div id="entryZoneOverlay" class="entryZoneOverlay hidden"><span>买点研究区间</span></div></div>
 
   
-  <div class="panel trendInspector">
+  
+  <div id="structureEntryLab" class="panel structureCaseLab">
     <div class="sectionHead">
-      <div><h3>趋势线研究对象</h3><span>确认后的趋势线会产生 Touch / Break / Retest 等可量化事件</span></div>
-      <div id="trendResearchBadge" class="trendBadge">未选择趋势线</div>
-    </div>
-    <div class="trendInspectorGrid">
-      <div class="trendControls">
-        <label>角色
-          <select id="trendRole"><option value="auto">自动判断</option><option value="support">支撑趋势线</option><option value="resistance">阻力趋势线</option></select>
-        </label>
-        <label>趋势线区域宽度（ATR）
-          <input id="trendZoneAtr" type="number" min="0.05" max="1.5" step="0.05" value="0.25">
-        </label>
-        <button id="confirmTrendlineResearch" class="primary" disabled>确认纳入研究</button>
-        <button id="excludeTrendlineResearch" disabled>仅画图，不纳入研究</button>
-      </div>
-      <div id="trendMetrics" class="trendMetrics">选择一根趋势线查看质量、生命周期和事件。</div>
-      <div>
-        <h4>最近事件</h4>
-        <div id="trendEvents" class="trendEvents">—</div>
-      </div>
-    </div>
-    <div class="mutedNote">因果保护：只有在 Blind Replay 尚未显示未来时确认/创建的趋势线，才会进入正式 Feature Snapshot；完整历史图上画的线只能用于描述和人工研究，避免未来函数。</div>
-  </div>
-
-
-  <div id="structureEntryLab" class="panel structureEntryLab">
-    <div class="sectionHead">
-      <div><h3>结构条件化买点研究室</h3><span>选趋势线 + 水平线 + 买点区间 → 在 1H / 15m / 5m / 1m 内寻找提前 B3 买点</span></div>
-      <button id="scanEntryCandidates" class="primary">扫描低周期买点</button>
+      <div><h3>Structure Case · 结构条件化买点研究室</h3><span>母结构全局固定；周期只是不同分辨率的观察窗口</span></div>
+      <div id="caseLockBadge" class="caseBadge">尚未建立 Structure Case</div>
     </div>
 
-    <div class="entrySetupGrid">
-      <div class="entrySetupBox">
-        <h4>① 结构组合</h4>
-        <div class="structureSlots"><div id="entryTrendSlot"></div><div id="entryHorizontalSlot"></div></div>
-        <button id="attachSelectedStructure">加入当前选中线</button>
-        <button id="clearStructureSet">清空结构组合</button>
-        <div class="mutedNote">先在主图“选择”模式点击趋势线，再加入；再选择水平线并加入。两条线会同时保留。</div>
-      </div>
-      <div class="entrySetupBox">
-        <h4>② 买点研究区间</h4>
-        <div id="entryZoneText" class="entryZoneText">未框选</div>
-        <button id="selectEntryZone" class="primary">在主图拖选区间</button>
-        <button id="clearEntryZone">清空区间</button>
-        <div class="mutedNote">区间可以覆盖 8H 大阳线形成之前及前几根 8H K 线；低周期 Entry 允许发生在 8H 收盘之前。</div>
-      </div>
-      <div class="entrySetupBox">
-        <h4>③ 低周期</h4>
-        <div id="entryTfChecks" class="entryTfChecks">
+    <div class="caseWorkflow">
+      <section class="caseBox">
+        <h4>① 锁定母结构</h4>
+        <div class="caseObjects"><div id="caseTrend"></div><div id="caseHorizontal"></div><div id="caseZone"></div></div>
+        <button id="lockSelectedStructure">把当前选中线锁入 Case</button>
+        <button id="selectCaseZone" class="primary">在母周期拖选 Entry Zone</button>
+        <button id="resetStructureCase" class="danger">清空 Case</button>
+        <div class="mutedNote">趋势线、水平线、Entry Zone 都保存原始时间/价格参数；切到更小周期绝不重新吸附或改规格。</div>
+      </section>
+
+      <section class="caseBox">
+        <h4>② 五个低周期</h4>
+        <div id="caseTfChecks" class="entryTfChecks">
+          <label><input type="checkbox" value="4h" checked>4H</label>
           <label><input type="checkbox" value="1h" checked>1H</label>
           <label><input type="checkbox" value="15m" checked>15m</label>
           <label><input type="checkbox" value="5m" checked>5m</label>
           <label><input type="checkbox" value="1m" checked>1m</label>
         </div>
+        <button id="scanCaseEntries" class="primary">扫描当前 Case 低周期买点</button>
+        <div id="caseStatus" class="caseStatus">先锁定 8H 趋势线、水平线和 Entry Zone。</div>
+      </section>
+
+      <section class="caseBox">
+        <h4>③ 人工评价</h4>
         <label>拒绝原因
-          <select id="entryRejectReason">
+          <select id="rejectReasonV7">
             <option>太早</option><option>太晚</option><option>低周期结构不成立</option>
             <option>高周期仍不安全</option><option>回调太深</option><option>没有真正止跌</option>
             <option>衍生品数据不支持</option><option>盈亏比不好</option><option>其他</option>
           </select>
         </label>
-      </div>
-      <div class="entrySetupBox">
-        <h4>④ Discovery 状态</h4>
-        <div id="entryDiscoverySummary">选择结构和区间后开始扫描。</div>
-        <button id="generateEntryStrategy">从当前发现生成策略草案</button>
-        <div class="mutedNote">当前区间只负责发现假设。正式策略必须去其他历史结构做验证。</div>
-      </div>
-    </div>
-
-    <div id="entryMiniCharts" class="entryMiniCharts"></div>
-
-    <div class="entryResearchGrid">
-      <section class="entryResearchBox">
-        <h4>候选买点 · 由你评价</h4>
-        <div id="entryCandidateDetail" class="entryCandidateDetail">点击候选查看完整因子快照。</div>
-        <div id="entryCandidateList" class="entryCandidateList">尚未扫描。</div>
+        <button id="idealEntryMode">★ 标记我的理想买点</button>
+        <div class="caseCounts">机器候选 <b id="caseCandidateCount">0</b> · 理想买点 <b id="caseIdealCount">0</b></div>
+        <div class="mutedNote">扫描不会自动寻找历史相似结构。现阶段只把这个 Case 研究透。</div>
       </section>
-      <section class="entryResearchBox">
-        <h4>条件化因子探索器</h4>
-        <div id="conditionalFactorTable">尚未扫描。</div>
+
+      <section class="caseBox">
+        <h4>④ 当前 Case 草案</h4>
+        <button id="generateCaseDraft">生成当前 Case Entry Rule 草案</button>
+        <div class="mutedNote">输出只标记为 CURRENT_CASE_EXPLANATION_ONLY，不声明泛化能力或有效 Alpha。</div>
       </section>
     </div>
 
-    <section class="entryResearchBox strategyDraftBox">
-      <h4>策略草案</h4>
-      <pre id="strategyDraft">尚未生成。</pre>
+    <div id="caseMiniCharts" class="caseMiniCharts"></div>
+
+    <div class="caseResearchGrid">
+      <section class="caseResearchBox">
+        <h4>买点形成阶梯 · 由你评价</h4>
+        <div id="caseEntryDetail" class="caseEntryDetail">L1 下跌衰竭 → L2 HL → L3 BOS → L4 HL+BOS → L5 Reclaim+HL+BOS</div>
+        <div id="caseCandidateList" class="caseCandidateList">尚未扫描。</div>
+      </section>
+
+      <section class="caseResearchBox">
+        <h4>我的理想买点</h4>
+        <div id="idealEntryList">还没有标记“我的理想买点”。</div>
+        <h4 class="subHead">当前 Structure Case · 买点解释因子</h4>
+        <div id="caseExplanation">先扫描候选，再由你评价合理/不合理。</div>
+      </section>
+    </div>
+
+    <section class="caseResearchBox caseDraftBox">
+      <h4>当前 Case 策略草案</h4>
+      <pre id="caseDraft">尚未生成。</pre>
     </section>
   </div>
 

@@ -8,7 +8,7 @@ import {analyzeTrendline} from './trendline_research.js';
 import {createTrendDrawingEngine} from './drawing_engine.js';
 import {scoreBars,previewTrades} from './strategy.js';
 import {initResearchUI,researchDataChanged} from './research_ui.js';
-import {initStructureEntryLab} from './structure_entry_lab.js';
+import {initStructureCaseLab} from './structure_case_lab.js';
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const TF_LABEL={'8h':'8小时','4h':'4小时','1h':'1小时','15m':'15分钟','5m':'5分钟','1m':'1分钟'};
@@ -151,15 +151,12 @@ async function selectDrawing(id){
   selectedDrawingId=id;renderDrawings();const d=getDrawings().find(x=>x.id===id);if(structureEntryLab)structureEntryLab.refresh();
   const editable=!!d&&d.type==='trend'&&d.timeframe===currentTF;
   $('#resetAnchorA').disabled=!editable;$('#resetAnchorB').disabled=!editable;$('#deleteSelected').disabled=!d;
-  $('#confirmTrendlineResearch').disabled=!(d?.type==='trend');
-  $('#excludeTrendlineResearch').disabled=!(d?.type==='trend');
-  $('#trendRole').disabled=!(d?.type==='trend');$('#trendZoneAtr').disabled=!(d?.type==='trend');
-  if(!d){$('#drawingInfo').textContent='未选择图形。';renderTrendInspector(null);return}
+  if(!d){$('#drawingInfo').textContent='未选择图形。';return}
   if(d.type==='trend'){
-    $('#trendRole').value=d.role||'auto';$('#trendZoneAtr').value=Number(d.zoneAtr??.25).toFixed(2);
-    $('#drawingInfo').innerHTML=`已选：${d.mode==='segment'?'线段':d.mode==='infinite'?'无限直线':'趋势射线'} · 来源 ${d.timeframe}<br>A ${fmtBJ(d.a.time)} @ ${num(d.a.price)}<br>B ${fmtBJ(d.b.time)} @ ${num(d.b.price)}`;
-    await refreshTrendInspector(d);
-  }else{$('#drawingInfo').innerHTML=`已选：水平位 @ ${num(d.price)}`;renderTrendInspector(null)}
+    $('#drawingInfo').innerHTML=`已选趋势线 · 母周期 ${TF_LABEL[d.timeframe]}<br>A ${fmtBJ(d.a.time)} @ ${num(d.a.price)}<br>B ${fmtBJ(d.b.time)} @ ${num(d.b.price)}<br>可直接锁入 Structure Case。`;
+  }else if(d.type==='horizontal'){
+    $('#drawingInfo').innerHTML=`已选水平线 · 母周期 ${TF_LABEL[d.timeframe]} · ${num(d.price)}<br>可直接锁入 Structure Case。`;
+  }
 }
 function nearestDrawing(point,time){
   let best=null,bestPx=Infinity;
@@ -367,7 +364,18 @@ async function init(){
     }
   });
 
-  $('#timeframe').onchange=async()=>{currentTF=$('#timeframe').value;currentRangeKey=TF_DEFAULT[currentTF];selectedDrawingId=null;fillMonthJump();renderRangeButtons();await loadQuickRange()};
+  $('#timeframe').onchange=async()=>{
+    currentTF=$('#timeframe').value;currentRangeKey=TF_DEFAULT[currentTF];selectedDrawingId=null;fillMonthJump();renderRangeButtons();
+    const sc=structureEntryLab?.case?.();
+    if(sc?.zone){
+      const span=Math.max(3600,Number(sc.zone.end)-Number(sc.zone.start));
+      const minPad=currentTF==='8h'?7*86400:currentTF==='4h'?4*86400:currentTF==='1h'?2*86400:86400;
+      const pad=Math.max(minPad,span*.45);
+      await loadWindow(Number(sc.zone.start)-pad,Number(sc.zone.end)+pad,`Structure Case ${sc.id}`);
+    }else{
+      await loadQuickRange();
+    }
+  };
   $('#applyCustomRange').onclick=async()=>{const a=$('#customStart').value,b=$('#customEnd').value;if(!a||!b)return;await loadWindow(bjStart(a),bjEnd(b),'自定义')};
   $('#monthJump').onchange=()=>jumpMonth($('#monthJump').value);
   $('#overviewMonth').onchange=renderOverview;
@@ -384,14 +392,6 @@ async function init(){
   $('#deleteSelected').onclick=()=>{if(selectedDrawingId){removeDrawing(selectedDrawingId);selectedDrawingId=null;renderDrawings();selectDrawing(null)}};
 
   $('#showHigherTfTrendlines').onchange=()=>renderDrawings();
-  $('#trendRole').onchange=()=>{if(selectedDrawingId){updateDrawing(selectedDrawingId,{role:$('#trendRole').value});const d=getDrawings().find(x=>x.id===selectedDrawingId);refreshTrendInspector(d)}};
-  $('#trendZoneAtr').onchange=()=>{if(selectedDrawingId){const z=Math.max(.05,Math.min(1.5,Number($('#trendZoneAtr').value)||.25));updateDrawing(selectedDrawingId,{zoneAtr:z});const d=getDrawings().find(x=>x.id===selectedDrawingId);refreshTrendInspector(d)}};
-  $('#confirmTrendlineResearch').onclick=()=>{if(selectedDrawingId){
-    const causal=!!(researchReplayState.active&&!researchReplayState.futureRevealed);
-    updateDrawing(selectedDrawingId,{researchConfirmed:true,causalEligible:causal,validFrom:causal?researchReplayState.decisionTime:null,confirmedAt:new Date().toISOString()});
-    const d=getDrawings().find(x=>x.id===selectedDrawingId);refreshTrendInspector(d);
-  }};
-  $('#excludeTrendlineResearch').onclick=()=>{if(selectedDrawingId){updateDrawing(selectedDrawingId,{researchConfirmed:false});const d=getDrawings().find(x=>x.id===selectedDrawingId);refreshTrendInspector(d)}};
   window.addEventListener('palab:replay-state',e=>{researchReplayState={...researchReplayState,...(e.detail||{})}});
   window.addEventListener('keydown',e=>{
     const tag=(document.activeElement?.tagName||'').toLowerCase();
@@ -418,7 +418,7 @@ async function init(){
     showReplayRows:(rows,ctx)=>showRowsForResearch(rows,ctx),
     fmtBJ
   });
-  structureEntryLab=initStructureEntryLab({
+  structureEntryLab=initStructureCaseLab({
     indexData:()=>indexData,
     currentTF:()=>currentTF,
     selectedDrawing:()=>getDrawings().find(x=>x.id===selectedDrawingId)||null,
