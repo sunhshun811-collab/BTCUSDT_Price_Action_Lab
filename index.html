@@ -50,6 +50,13 @@
   <label>趋势线类型
     <select id="trendMode"><option value="ray">趋势射线</option><option value="segment">线段</option><option value="infinite">无限直线</option></select>
   </label>
+  <label>自动校准
+    <select id="trendCalibrationMode">
+      <option value="dual">双锚点结构校准（默认）</option>
+      <option value="fit">多点结构拟合</option>
+      <option value="free">自由线，不校准</option>
+    </select>
+  </label>
   <label>磁吸
     <select id="snapMode"><option value="structure">结构磁吸（默认）</option><option value="weak">OHLC弱磁吸</option><option value="strong">OHLC强磁吸</option><option value="off">关闭</option></select>
   </label>
@@ -60,7 +67,17 @@
     <button id="clearDrawings" class="tool danger">清空本周期</button>
   </div>
   <label class="check"><input id="showHigherTfTrendlines" type="checkbox" checked> 显示高周期趋势线</label>
-  <div id="drawingInfo" class="infoBox">结构磁吸会优先寻找附近显著 Swing High / Swing Low。选中趋势线后可纳入研究。</div>
+  <div id="drawingInfo" class="infoBox">选择“趋势线”后，按住鼠标大概拖出方向即可；无需点准真实顶点/低点。</div>
+  <div id="trendCalibrationPanel" class="calibrationPanel hidden">
+    <div id="calibrationSummary"></div>
+    <div class="calibrationActions">
+      <button id="acceptCalibratedLine" class="primary">接受候选</button>
+      <button id="nextCalibrationCandidate">下一个候选</button>
+      <button id="useRawTrendline">使用原始手绘线</button>
+      <button id="cancelTrendDrawing">取消</button>
+    </div>
+    <div class="shortcutHint">Enter 接受 · N 下一个 · Esc 取消</div>
+  </div>
 
   <h3>当前光标</h3>
   <div id="cursorInfo" class="infoBox">移动鼠标或点击K线查看。</div>

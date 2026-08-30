@@ -5,6 +5,7 @@ import {loadIndex,loadMonths,loadContexts,toCandleRows,toVolumeRows} from './dat
 import {setContextData,renderContextAt} from './context.js';
 import {getDrawings,addDrawing,updateDrawing,removeDrawing,drawingsFor,drawingsForView,undoDrawing,clearDrawings,getLabels,addLabel,downloadJson} from './annotations.js';
 import {analyzeTrendline} from './trendline_research.js';
+import {createTrendDrawingEngine} from './drawing_engine.js';
 import {scoreBars,previewTrades} from './strategy.js';
 import {initResearchUI,researchDataChanged} from './research_ui.js';
 
@@ -23,6 +24,7 @@ let indexData,chart,candle,volume,markerApi,previewMarkerApi,currentRows=[],load
 let tool='select',firstAnchor=null,hoverAnchor=null,selectedPoint=null,selectedDrawingId=null,reanchor=null;
 let lineSeries=[],priceLines=[],previewLine=null,rowMap=new Map(),structureSnaps=[],currentRangeKey='1Y';
 let researchReplayState={active:false,decisionTime:null,futureRevealed:false};
+let drawingEngine=null;
 const overviewCharts=[];
 
 function chartOptions(){
@@ -83,10 +85,6 @@ function buildMainChart(){
     if(!p.point||!p.time)return;
     const d=p.seriesData.get(candle);if(d)$('#cursorInfo').innerHTML=`北京时间：${fmtBJ(Number(p.time),true)}<br>O ${num(d.open)} · H ${num(d.high)} · L ${num(d.low)} · C ${num(d.close)}`;
     renderContextAt(Number(p.time));
-    if(tool==='trend'&&firstAnchor){
-      hoverAnchor=snapPoint(Number(p.time),Number(candle.coordinateToPrice(p.point.y)),p.point.y);
-      renderPreviewTrend();
-    }
   });
   chart.subscribeClick(handleClick);
 }
@@ -143,6 +141,7 @@ function renderPreviewTrend(){
 function clearPreview(){if(previewLine){chart.removeSeries(previewLine);previewLine=null}hoverAnchor=null}
 function setTool(name){
   tool=name;firstAnchor=null;reanchor=null;clearPreview();
+  if(drawingEngine)drawingEngine.setActive(name==='trend');
   $$('.tool').forEach(b=>b.classList.remove('active'));const map={select:'#toolSelect',trend:'#toolTrend',horizontal:'#toolHorizontal'};if(map[name])$(map[name]).classList.add('active');
 }
 async function selectDrawing(id){
@@ -183,17 +182,7 @@ function handleClick(p){
     }
   }
   if(tool==='select'){const d=nearestDrawing(p.point,Number(p.time));selectDrawing(d?.id||null);return}
-  if(tool==='trend'){
-    if(!firstAnchor){firstAnchor={time:snapped.time,price:snapped.price};$('#drawingInfo').innerHTML=`锚点 A：${fmtBJ(snapped.time)} @ ${num(snapped.price)}${snapped.snapped?` <span class="snapTag">吸附 ${snapped.snapName}</span>`:''}<br>移动鼠标预览，再点击锚点 B。`;return}
-    if(firstAnchor.time===snapped.time)return;
-    const d={id:crypto.randomUUID(),type:'trend',timeframe:currentTF,a:firstAnchor,b:{time:snapped.time,price:snapped.price},mode:$('#trendMode').value,
-      role:'auto',zoneAtr:.25,researchConfirmed:false,
-      causalEligible:!!(researchReplayState.active&&!researchReplayState.futureRevealed),
-      validFrom:(researchReplayState.active&&!researchReplayState.futureRevealed)?researchReplayState.decisionTime:null,
-      origin:(researchReplayState.active&&!researchReplayState.futureRevealed)?'blind_replay':'manual_full_chart',
-      createdAt:new Date().toISOString()};
-    addDrawing(d);firstAnchor=null;clearPreview();setTool('select');selectDrawing(d.id);return;
-  }
+  if(tool==='trend')return; // V5 uses pointer-drag Drawing Engine instead of chart.subscribeClick().
   if(tool==='horizontal'){const d={id:crypto.randomUUID(),type:'horizontal',timeframe:currentTF,price:snapped.price,createdAt:new Date().toISOString()};addDrawing(d);setTool('select');selectDrawing(d.id)}
 }
 function renderDrawings(){
@@ -208,6 +197,29 @@ function renderDrawings(){
       if(d.id===selectedDrawingId)createSeriesMarkers(s,[{time:d.a.time,position:'inBar',shape:'circle',color:'#ffffff',text:'A'},{time:d.b.time,position:'inBar',shape:'circle',color:'#ffffff',text:'B'}].sort((a,b)=>a.time-b.time));
       lineSeries.push({id:d.id,series:s});
     }
+  }
+}
+
+
+function renderCalibrationState(s){
+  const panel=$('#trendCalibrationPanel'),summary=$('#calibrationSummary');
+  if(!s||s.kind==='idle'){
+    panel.classList.add('hidden');return;
+  }
+  panel.classList.remove('hidden');
+  if(s.kind==='drawing'){
+    summary.innerHTML=`<strong>粗略画线中</strong><div class="small">${s.message||'拖动后松开即可自动识别锚点。'}</div>`;
+    return;
+  }
+  if(s.kind==='candidate'){
+    const c=s.candidates[s.index]||s.candidates[0];
+    const conf=Math.round(Number(c.confidence??c.score??0)*100);
+    const score=Math.round(Number(c.score??0)*100);
+    summary.innerHTML=`<strong>候选 ${s.index+1}/${s.candidates.length} · ${c.anchorType}</strong>
+      <div class="small">A：${fmtBJ(c.a.time,true)} @ ${num(c.a.price)}<br>
+      B：${fmtBJ(c.b.time,true)} @ ${num(c.b.price)}<br>
+      自动校准分 ${score} · 置信度 ${conf}% · 角色 ${c.role==='support'?'支撑':c.role==='resistance'?'阻力':'自动'}<br>
+      你只需要确认“是不是你想表达的那条线”。</div>`;
   }
 }
 
@@ -329,11 +341,35 @@ function renderLabelsTable(){
 }
 async function init(){
   indexData=await (await import('./data.js')).loadIndex();currentRangeKey=TF_DEFAULT[currentTF];fillMonthJump();renderRangeButtons();bindSliders();
+
+  drawingEngine=createTrendDrawingEngine({
+    container:()=>$('#chart'),
+    chart:()=>chart,
+    candle:()=>candle,
+    rows:()=>currentRows,
+    timeframe:()=>currentTF,
+    calibrationMode:()=>$('#trendCalibrationMode').value,
+    trendMode:()=>$('#trendMode').value,
+    replayState:()=>researchReplayState,
+    onState:renderCalibrationState,
+    onCommit:(d)=>{
+      addDrawing(d);
+      setTool('select');
+      selectDrawing(d.id);
+      $('#drawingInfo').innerHTML=`趋势线已自动校准。<br>原始粗略线已保存在 rawA/rawB；正式锚点 A/B 已识别。`;
+    }
+  });
+
   $('#timeframe').onchange=async()=>{currentTF=$('#timeframe').value;currentRangeKey=TF_DEFAULT[currentTF];selectedDrawingId=null;fillMonthJump();renderRangeButtons();await loadQuickRange()};
   $('#applyCustomRange').onclick=async()=>{const a=$('#customStart').value,b=$('#customEnd').value;if(!a||!b)return;await loadWindow(bjStart(a),bjEnd(b),'自定义')};
   $('#monthJump').onchange=()=>jumpMonth($('#monthJump').value);
   $('#overviewMonth').onchange=renderOverview;
   $('#toolSelect').onclick=()=>setTool('select');$('#toolTrend').onclick=()=>setTool('trend');$('#toolHorizontal').onclick=()=>setTool('horizontal');
+  $('#acceptCalibratedLine').onclick=()=>drawingEngine?.accept();
+  $('#nextCalibrationCandidate').onclick=()=>drawingEngine?.nextCandidate();
+  $('#useRawTrendline').onclick=()=>drawingEngine?.useRaw();
+  $('#cancelTrendDrawing').onclick=()=>{drawingEngine?.cancel();setTool('select')};
+
   $('#undoDrawing').onclick=()=>{undoDrawing(currentTF);selectedDrawingId=null;renderDrawings()};
   $('#clearDrawings').onclick=()=>{if(confirm('清空当前周期全部图形？')){clearDrawings(currentTF);selectedDrawingId=null;renderDrawings()}};
   $('#resetAnchorA').onclick=()=>{if(selectedDrawingId){reanchor='a';setTool('select');$('#drawingInfo').textContent='请在K线上点击新的锚点 A。'}};
@@ -350,6 +386,16 @@ async function init(){
   }};
   $('#excludeTrendlineResearch').onclick=()=>{if(selectedDrawingId){updateDrawing(selectedDrawingId,{researchConfirmed:false});const d=getDrawings().find(x=>x.id===selectedDrawingId);refreshTrendInspector(d)}};
   window.addEventListener('palab:replay-state',e=>{researchReplayState={...researchReplayState,...(e.detail||{})}});
+  window.addEventListener('keydown',e=>{
+    const tag=(document.activeElement?.tagName||'').toLowerCase();
+    if(['input','textarea','select'].includes(tag))return;
+    if(e.key==='Escape'&&drawingEngine?.isActive()){e.preventDefault();drawingEngine.cancel();setTool('select');return}
+    if(e.key==='Enter'&&drawingEngine?.getState()?.kind==='candidate'){e.preventDefault();drawingEngine.accept();return}
+    if((e.key==='n'||e.key==='N')&&drawingEngine?.getState()?.kind==='candidate'){e.preventDefault();drawingEngine.nextCandidate();return}
+    if(e.key==='Delete'&&selectedDrawingId){e.preventDefault();removeDrawing(selectedDrawingId);selectedDrawingId=null;renderDrawings();selectDrawing(null);return}
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undoDrawing(currentTF);selectedDrawingId=null;renderDrawings()}
+  });
+
 
   $('#confidence').oninput=()=>$('#confidenceText').textContent=$('#confidence').value;
   $$('.labelGrid button').forEach(b=>b.onclick=()=>{document.body.dataset.pendingLabel=b.dataset.label;$$('.labelGrid button').forEach(x=>x.classList.remove('active'));b.classList.add('active')});

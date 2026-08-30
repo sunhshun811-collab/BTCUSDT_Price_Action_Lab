@@ -45,3 +45,9 @@ footer{display:flex;justify-content:space-between;gap:10px;color:#6f849a;font-si
 .metricGrid{display:grid;grid-template-columns:repeat(4,minmax(80px,1fr));gap:5px}.metricCell{background:#0c1925;border:1px solid #1c3042;border-radius:7px;padding:6px}.metricCell span{display:block;font-size:8px;color:#7d96ab}.metricCell b{display:block;font-size:12px;margin-top:2px}
 .trendEvents{display:flex;flex-wrap:wrap;gap:5px}.eventChip{font-size:8px;border:1px solid #29455d;background:#0e1c29;border-radius:20px;padding:4px 6px}.eventChip.break{border-color:#7d3e43;color:#ff9ca3}.eventChip.good{border-color:#2e6f51;color:#8de0b3}
 @media(max-width:1200px){.trendInspectorGrid{grid-template-columns:1fr 1fr}.trendControls{grid-column:1/-1}}@media(max-width:700px){.trendInspectorGrid{grid-template-columns:1fr}.metricGrid{grid-template-columns:repeat(2,1fr)}}
+
+.trendDrawActive{cursor:crosshair!important;touch-action:none;user-select:none}
+.calibrationPanel{margin-top:7px;border:1px solid #4f6d88;background:#0a1824;border-radius:8px;padding:8px}
+.calibrationPanel.hidden{display:none}.calibrationPanel strong{color:#ffd166}.calibrationPanel .small{font-size:8px;color:#819bb2;line-height:1.55}
+.calibrationActions{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:7px}.calibrationActions button{border:1px solid var(--line);background:#111e2b;color:#c9d7e5;padding:6px;border-radius:6px;font-size:8px}.calibrationActions .primary{background:#256ed1;color:white}
+.shortcutHint{font-size:7px;color:#6f879d;margin-top:5px}
