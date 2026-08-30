@@ -5,6 +5,7 @@ import {loadIndex,loadMonths,loadContexts,toCandleRows,toVolumeRows} from './dat
 import {setContextData,renderContextAt} from './context.js';
 import {getDrawings,addDrawing,updateDrawing,removeDrawing,drawingsFor,undoDrawing,clearDrawings,getLabels,addLabel,downloadJson} from './annotations.js';
 import {scoreBars,previewTrades} from './strategy.js';
+import {initResearchUI,researchDataChanged} from './research_ui.js';
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const TF_LABEL={'8h':'8小时','4h':'4小时','1h':'1小时','15m':'15分钟','5m':'5分钟','1m':'1分钟'};
@@ -17,7 +18,7 @@ const TF_RANGES={
 };
 const TF_DEFAULT={'8h':'1Y','4h':'6M','1h':'3M','15m':'1M','5m':'1W','1m':'3D'};
 
-let indexData,chart,candle,volume,markerApi,previewMarkerApi,currentRows=[],loadedRows=[],currentTF='8h';
+let indexData,chart,candle,volume,markerApi,previewMarkerApi,currentRows=[],loadedRows=[],baseWindowRows=[],fullContextRows=[],currentTF='8h';
 let tool='select',firstAnchor=null,hoverAnchor=null,selectedPoint=null,selectedDrawingId=null,reanchor=null;
 let lineSeries=[],priceLines=[],previewLine=null,rowMap=new Map(),currentRangeKey='1Y';
 const overviewCharts=[];
@@ -174,14 +175,24 @@ function humanMarkers(){
   return getLabels().filter(x=>x.timeframe===currentTF).map(x=>{const [shape,color,text]=map[x.label];return{time:x.time,position:x.label>0?'belowBar':x.label<0?'aboveBar':'inBar',shape,color,text:`${text} ${x.confidence}`}})
 }
 function renderHumanMarkers(){if(markerApi)markerApi.setMarkers(humanMarkers().sort((a,b)=>a.time-b.time))}
+
+function showRowsForResearch(rows,ctxRows){
+  currentRows=rows.slice();
+  buildMainChart();
+  candle.setData(toCandleRows(currentRows));volume.setData(toVolumeRows(currentRows));rebuildMap();
+  chart.timeScale().fitContent();renderDrawings();renderHumanMarkers();
+  setContextData({rows:(ctxRows||[]).slice()});
+}
+
 async function loadWindow(from,to,label){
   const months=monthsCovering(from,to);if(!months.length){$('#dataStatus').textContent=' · 所选日期暂无云端数据';return}
   $('#dataStatus').textContent=` · 正在加载 ${months.length} 个分片…`;
   loadedRows=await loadMonths(currentTF,months);currentRows=loadedRows.filter(r=>r[0]>=from&&r[0]<to);
   if(!currentRows.length){$('#dataStatus').textContent=' · 范围内无K线';return}
-  buildMainChart();candle.setData(toCandleRows(currentRows));volume.setData(toVolumeRows(currentRows));rebuildMap();
-  chart.timeScale().fitContent();renderDrawings();renderHumanMarkers();
-  try{setContextData(await loadContexts(months))}catch(e){console.warn(e)}
+  baseWindowRows=currentRows.slice();
+  try{const cx=await loadContexts(months);fullContextRows=(cx.rows||[]).slice()}catch(e){console.warn(e);fullContextRows=[]}
+  showRowsForResearch(baseWindowRows,fullContextRows);
+  researchDataChanged();
   $('#customStart').value=ymdBJ(currentRows[0][0]);$('#customEnd').value=ymdBJ(currentRows.at(-1)[0]);
   $('#rangeHint').textContent=`${label} · ${fmtBJ(currentRows[0][0])} → ${fmtBJ(currentRows.at(-1)[0])} · ${months.length}个月分片`;
   $('#dataStatus').textContent=` · ${currentRows.length.toLocaleString()} 根K线`;
@@ -208,7 +219,13 @@ function runPreview(){
   previewMarkerApi.setMarkers(r.events.map(e=>({time:e.time,position:e.side.includes('LONG')?(e.side.startsWith('OPEN')?'belowBar':'aboveBar'):(e.side.startsWith('OPEN')?'aboveBar':'belowBar'),shape:e.side.startsWith('OPEN')?(e.side.endsWith('LONG')?'arrowUp':'arrowDown'):'circle',color:e.side.includes('LONG')?'#ef5350':'#26a69a',text:e.side.replace('_',' ')})));
   $('#strategyResult').innerHTML=`当前加载窗口预览：开启交易 ${r.trades} 次；简化价格+6bps/side收益 <b class="${r.totalReturn>=0?'positive':'negative'}">${(r.totalReturn*100).toFixed(2)}%</b>。<br>这仍是草稿，不代表正式 Alpha。`;
 }
-function switchMode(mode){$$('.mode').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));$('#editorView').classList.toggle('hidden',mode!=='editor');$('#overviewView').classList.toggle('hidden',mode!=='overview');$('#labelsView').classList.toggle('hidden',mode!=='labels');if(mode==='overview')renderOverview();if(mode==='labels')renderLabelsTable()}
+function switchMode(mode){
+  $$('.mode').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+  const editorMode=mode==='editor'||mode==='research';
+  $('#editorView').classList.toggle('hidden',!editorMode);$('#overviewView').classList.toggle('hidden',mode!=='overview');$('#labelsView').classList.toggle('hidden',mode!=='labels');
+  if(mode==='overview')renderOverview();if(mode==='labels')renderLabelsTable();
+  if(mode==='research')setTimeout(()=>$('#researchPanel')?.scrollIntoView({behavior:'smooth',block:'start'}),60);
+}
 async function miniChart(tf,container,month){
   if(!availableMonths(tf).includes(month)){container.innerHTML=`<div class="miniTitle">${TF_LABEL[tf]} · 无数据</div>`;return}
   const rows=await loadMonths(tf,[month]),c=createChart(container,chartOptions()),s=c.addSeries(CandlestickSeries,candleOptions());s.setData(toCandleRows(rows));c.timeScale().fitContent();overviewCharts.push(c)
@@ -238,6 +255,15 @@ async function init(){
   $('#saveLabel').onclick=saveHumanLabel;$('#runPreview').onclick=runPreview;
   $('#exportLabels').onclick=()=>downloadJson('price_action_human_labels.json',getLabels());$('#exportDrawings').onclick=()=>downloadJson('price_action_drawings.json',getDrawings());
   $$('.mode').forEach(b=>b.onclick=()=>switchMode(b.dataset.mode));
+  initResearchUI({
+    indexData:()=>indexData,
+    currentTF:()=>currentTF,
+    baseRows:()=>baseWindowRows,
+    fullContextRows:()=>fullContextRows,
+    selectedPoint:()=>selectedPoint,
+    showReplayRows:(rows,ctx)=>showRowsForResearch(rows,ctx),
+    fmtBJ
+  });
   await loadQuickRange();renderLabelsTable();
 }
 init().catch(e=>{document.body.innerHTML=`<pre style="color:white;padding:20px">启动失败：${e.stack||e}</pre>`});
