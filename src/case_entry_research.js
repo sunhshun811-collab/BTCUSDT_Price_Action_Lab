@@ -192,6 +192,34 @@ export function explainCase(candidates,feedback={}){
   }
   return out.sort((a,b)=>Math.abs(b.separation??0)-Math.abs(a.separation??0));
 }
+
+export function classifyByIdealZone(candidate,idealZone){
+  if(!idealZone)return 'UNSET';
+  const t=Number(candidate.decisionTime);
+  if(t<Number(idealZone.start))return 'TOO_EARLY';
+  if(t>Number(idealZone.end))return 'TOO_LATE';
+  return 'IN_IDEAL_ZONE';
+}
+export function explainIdealZone(candidates,idealZone){
+  if(!idealZone)return[];
+  const inside=candidates.filter(x=>classifyByIdealZone(x,idealZone)==='IN_IDEAL_ZONE');
+  const outside=candidates.filter(x=>classifyByIdealZone(x,idealZone)!=='IN_IDEAL_ZONE');
+  const fields=[
+    ['level','买点确认层级'],['bosStrengthAtr','BOS强度'],['downsideEfficiencyChange','下跌衰竭改善'],
+    ['lowerWickRatio','下影线比例'],['volumeAsymmetry','上涨/下跌成交量比'],['compression','波动压缩'],
+    ['horizontalDistanceAtr','距水平线ATR'],['trendlineDistanceAtr','距趋势线ATR'],['undercutDepthAtr','水平位下穿深度'],
+    ['funding_z7d','Funding 7日Z'],['basis_bps_z7d','Basis 7日Z'],['oi_change_1h','OI 1h变化'],['taker_ls_ratio','Taker L/S']
+  ];
+  const out=[];
+  for(const [key,label] of fields){
+    const a=inside.map(x=>x[key]).filter(finite),b=outside.map(x=>x[key]).filter(finite),all=[...a,...b];
+    const am=mean(a),bm=mean(b),m=mean(all);
+    const sd=all.length>1&&m!=null?Math.sqrt(all.reduce((s,v)=>s+(v-m)**2,0)/all.length):null;
+    out.push({key,label,insideN:a.length,outsideN:b.length,insideMean:am,outsideMean:bm,
+      separation:(finite(am)&&finite(bm)&&finite(sd)&&sd>1e-12)?(am-bm)/sd:null});
+  }
+  return out.sort((a,b)=>Math.abs(b.separation??0)-Math.abs(a.separation??0));
+}
 export function buildCaseDraft(structureCase,feedback={},explanation=[]){
   const accepted=structureCase.candidates.filter(c=>feedback[c.id]?.verdict==='accept');
   return {
@@ -205,7 +233,7 @@ export function buildCaseDraft(structureCase,feedback={},explanation=[]){
       entryZone:structureCase.zone
     },
     humanApprovedEntries:accepted.map(x=>({id:x.id,timeframe:x.sourceTf,decisionTime:x.decisionTime,entryPrice:x.entryPrice,level:x.level,type:x.type})),
-    idealEntries:structureCase.idealEntries||[],
+    idealEntryZone:structureCase.idealZone||null,
     strongestCurrentCaseSeparators:explanation.filter(x=>finite(x.separation)).slice(0,8),
     riskModel:{marginFraction:.10,leverage:10,accountNotionalApprox:1.0},
     note:'仅解释当前人工确认 Structure Case；未做自动相似结构、未做泛化验证、未声明为有效 Alpha。'

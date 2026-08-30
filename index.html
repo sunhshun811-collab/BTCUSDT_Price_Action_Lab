@@ -30,15 +30,13 @@
     </select>
   </label>
 
-  <div class="toolTitle">时间范围</div>
-  <div id="rangeButtons" class="rangeGrid"></div>
+  <div class="toolTitle">全局日期范围</div>
   <div class="dateGrid">
-    <label>开始<input id="customStart" type="date"></label>
-    <label>结束<input id="customEnd" type="date"></label>
+    <label>开始日期<input id="customStart" type="date"></label>
+    <label>结束日期<input id="customEnd" type="date"></label>
   </div>
-  <button id="applyCustomRange" class="tool wide">应用自定义日期</button>
-  <label>快速跳转到月份<select id="monthJump"></select></label>
-  <div id="rangeHint" class="hint"></div>
+  <button id="applyCustomRange" class="tool wide">应用到全部周期</button>
+  <div id="rangeHint" class="hint">8H / 4H / 1H / 15m / 5m / 1m 始终使用同一日期范围，并显示该范围内全部 K 线。</div>
 
   <div class="toolTitle">画图工具</div>
   <div class="toolGrid">
@@ -97,7 +95,11 @@
     <div><strong id="chartTitle">BTCUSDT · 8小时</strong><span id="dataStatus"></span></div>
     <div class="chartHint">拖动 / 缩放 / 十字光标 · 红涨绿跌 · 北京时间</div>
   </div>
-  <div id="chartWrap" class="panel chartWrap"><div id="chart"></div><div id="entryZoneOverlay" class="entryZoneOverlay hidden"><span>买点研究区间</span></div></div>
+  <div id="chartWrap" class="panel chartWrap">
+    <div id="chart"></div>
+    <div id="entryZoneOverlay" class="entryZoneOverlay hidden"><span>买点研究区间</span></div>
+    <div id="idealZoneOverlay" class="idealZoneOverlay hidden"><span>我的理想买点区间</span></div>
+  </div>
 
   
   
@@ -110,11 +112,13 @@
     <div class="caseWorkflow">
       <section class="caseBox">
         <h4>① 锁定母结构</h4>
-        <div class="caseObjects"><div id="caseTrend"></div><div id="caseHorizontal"></div><div id="caseZone"></div></div>
+        <div class="caseObjects"><div id="caseTrend"></div><div id="caseHorizontal"></div><div id="caseZone"></div><div id="caseIdealZone"></div></div>
         <button id="lockSelectedStructure">把当前选中线锁入 Case</button>
-        <button id="selectCaseZone" class="primary">在母周期拖选 Entry Zone</button>
+        <button id="selectCaseZone" class="primary">在当前周期拖选 Entry Research Zone</button>
+        <button id="selectIdealZone">★ 在当前周期拖选我的理想买点区间</button>
+        <button id="clearIdealZone">清空理想买点区间</button>
         <button id="resetStructureCase" class="danger">清空 Case</button>
-        <div class="mutedNote">趋势线、水平线、Entry Zone 都保存原始时间/价格参数；切到更小周期绝不重新吸附或改规格。</div>
+        <div class="mutedNote">趋势线/水平线保持原规格；Entry Research Zone 和 Ideal Entry Zone 都按绝对时间保存，可在任意周期选择并跨周期原样投影。</div>
       </section>
 
       <section class="caseBox">
@@ -139,9 +143,8 @@
             <option>衍生品数据不支持</option><option>盈亏比不好</option><option>其他</option>
           </select>
         </label>
-        <button id="idealEntryMode">★ 标记我的理想买点</button>
-        <div class="caseCounts">机器候选 <b id="caseCandidateCount">0</b> · 理想买点 <b id="caseIdealCount">0</b></div>
-        <div class="mutedNote">扫描不会自动寻找历史相似结构。现阶段只把这个 Case 研究透。</div>
+        <div class="caseCounts">机器候选 <b id="caseCandidateCount">0</b> · 理想区间命中 <b id="caseIdealCount">0</b></div>
+        <div class="mutedNote">理想买点是一个时间窗口，不再要求精确到某一根 K 线。扫描不会自动寻找历史相似结构。</div>
       </section>
 
       <section class="caseBox">
@@ -161,8 +164,8 @@
       </section>
 
       <section class="caseResearchBox">
-        <h4>我的理想买点</h4>
-        <div id="idealEntryList">还没有标记“我的理想买点”。</div>
+        <h4>我的理想买点区间</h4>
+        <div id="idealEntryList">还没有选择理想买点区间。</div>
         <h4 class="subHead">当前 Structure Case · 买点解释因子</h4>
         <div id="caseExplanation">先扫描候选，再由你评价合理/不合理。</div>
       </section>
@@ -264,7 +267,7 @@
 </section>
 
 <section id="overviewView" class="hidden">
-  <div class="panel overviewHeader"><div><strong>六周期同步总览</strong><span>同一月份快速比较 8H → 4H → 1H → 15m → 5m → 1m</span></div><label>月份<select id="overviewMonth"></select></label></div>
+  <div class="panel overviewHeader"><div><strong>六周期同步总览</strong><span id="overviewRangeText">使用左上角同一全局日期范围，全部 K 线完整显示</span></div></div>
   <div id="overviewGrid" class="overviewGrid"></div>
 </section>
 
