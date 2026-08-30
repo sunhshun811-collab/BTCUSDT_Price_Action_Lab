@@ -8,6 +8,7 @@ import {analyzeTrendline} from './trendline_research.js';
 import {createTrendDrawingEngine} from './drawing_engine.js';
 import {scoreBars,previewTrades} from './strategy.js';
 import {initResearchUI,researchDataChanged} from './research_ui.js';
+import {initStructureEntryLab} from './structure_entry_lab.js';
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const TF_LABEL={'8h':'8小时','4h':'4小时','1h':'1小时','15m':'15分钟','5m':'5分钟','1m':'1分钟'};
@@ -24,7 +25,8 @@ let indexData,chart,candle,volume,markerApi,previewMarkerApi,currentRows=[],load
 let tool='select',firstAnchor=null,hoverAnchor=null,selectedPoint=null,selectedDrawingId=null,reanchor=null;
 let lineSeries=[],priceLines=[],previewLine=null,rowMap=new Map(),structureSnaps=[],currentRangeKey='1Y';
 let researchReplayState={active:false,decisionTime:null,futureRevealed:false};
-let drawingEngine=null;
+let drawingEngine=null,structureEntryLab=null;
+let entryCandidateMarkers=[];
 const overviewCharts=[];
 
 function chartOptions(){
@@ -87,6 +89,7 @@ function buildMainChart(){
     renderContextAt(Number(p.time));
   });
   chart.subscribeClick(handleClick);
+  if(structureEntryLab)structureEntryLab.chartRebuilt();
 }
 function rebuildMap(){
   rowMap=new Map(currentRows.map(r=>[r[0],r]));
@@ -145,7 +148,7 @@ function setTool(name){
   $$('.tool').forEach(b=>b.classList.remove('active'));const map={select:'#toolSelect',trend:'#toolTrend',horizontal:'#toolHorizontal'};if(map[name])$(map[name]).classList.add('active');
 }
 async function selectDrawing(id){
-  selectedDrawingId=id;renderDrawings();const d=getDrawings().find(x=>x.id===id);
+  selectedDrawingId=id;renderDrawings();const d=getDrawings().find(x=>x.id===id);if(structureEntryLab)structureEntryLab.refresh();
   const editable=!!d&&d.type==='trend'&&d.timeframe===currentTF;
   $('#resetAnchorA').disabled=!editable;$('#resetAnchorB').disabled=!editable;$('#deleteSelected').disabled=!d;
   $('#confirmTrendlineResearch').disabled=!(d?.type==='trend');
@@ -275,7 +278,10 @@ function humanMarkers(){
   const map={'2':['arrowUp','#ef5350','强多'],'1':['arrowUp','#f28a87','偏多'],'0':['circle','#9aa9b7','观望'],'-1':['arrowDown','#69bdb4','偏空'],'-2':['arrowDown','#26a69a','强空']};
   return getLabels().filter(x=>x.timeframe===currentTF).map(x=>{const [shape,color,text]=map[x.label];return{time:x.time,position:x.label>0?'belowBar':x.label<0?'aboveBar':'inBar',shape,color,text:`${text} ${x.confidence}`}})
 }
-function renderHumanMarkers(){if(markerApi)markerApi.setMarkers(humanMarkers().sort((a,b)=>a.time-b.time))}
+function renderHumanMarkers(){
+  if(markerApi)markerApi.setMarkers([...humanMarkers(),...entryCandidateMarkers].sort((a,b)=>a.time-b.time));
+}
+function setEntryCandidateMarkers(v){entryCandidateMarkers=(v||[]).slice();renderHumanMarkers()}
 
 function showRowsForResearch(rows,ctxRows){
   currentRows=rows.slice();
@@ -294,6 +300,7 @@ async function loadWindow(from,to,label){
   try{const cx=await loadContexts(months);fullContextRows=(cx.rows||[]).slice()}catch(e){console.warn(e);fullContextRows=[]}
   showRowsForResearch(baseWindowRows,fullContextRows);
   researchDataChanged();
+  if(structureEntryLab)structureEntryLab.dataChanged();
   $('#customStart').value=ymdBJ(currentRows[0][0]);$('#customEnd').value=ymdBJ(currentRows.at(-1)[0]);
   $('#rangeHint').textContent=`${label} · ${fmtBJ(currentRows[0][0])} → ${fmtBJ(currentRows.at(-1)[0])} · ${months.length}个月分片`;
   $('#dataStatus').textContent=` · ${currentRows.length.toLocaleString()} 根K线`;
@@ -410,6 +417,15 @@ async function init(){
     selectedPoint:()=>selectedPoint,
     showReplayRows:(rows,ctx)=>showRowsForResearch(rows,ctx),
     fmtBJ
+  });
+  structureEntryLab=initStructureEntryLab({
+    indexData:()=>indexData,
+    currentTF:()=>currentTF,
+    selectedDrawing:()=>getDrawings().find(x=>x.id===selectedDrawingId)||null,
+    chart:()=>chart,
+    chartContainer:()=>$('#chart'),
+    chartWrap:()=>$('#chartWrap'),
+    setEntryMarkers:setEntryCandidateMarkers
   });
   await loadQuickRange();renderLabelsTable();
 }

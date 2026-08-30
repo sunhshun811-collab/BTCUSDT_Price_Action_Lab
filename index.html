@@ -97,7 +97,7 @@
     <div><strong id="chartTitle">BTCUSDT · 8小时</strong><span id="dataStatus"></span></div>
     <div class="chartHint">拖动 / 缩放 / 十字光标 · 红涨绿跌 · 北京时间</div>
   </div>
-  <div id="chartWrap" class="panel chartWrap"><div id="chart"></div></div>
+  <div id="chartWrap" class="panel chartWrap"><div id="chart"></div><div id="entryZoneOverlay" class="entryZoneOverlay hidden"><span>买点研究区间</span></div></div>
 
   
   <div class="panel trendInspector">
@@ -123,6 +123,72 @@
       </div>
     </div>
     <div class="mutedNote">因果保护：只有在 Blind Replay 尚未显示未来时确认/创建的趋势线，才会进入正式 Feature Snapshot；完整历史图上画的线只能用于描述和人工研究，避免未来函数。</div>
+  </div>
+
+
+  <div id="structureEntryLab" class="panel structureEntryLab">
+    <div class="sectionHead">
+      <div><h3>结构条件化买点研究室</h3><span>选趋势线 + 水平线 + 买点区间 → 在 1H / 15m / 5m / 1m 内寻找提前 B3 买点</span></div>
+      <button id="scanEntryCandidates" class="primary">扫描低周期买点</button>
+    </div>
+
+    <div class="entrySetupGrid">
+      <div class="entrySetupBox">
+        <h4>① 结构组合</h4>
+        <div class="structureSlots"><div id="entryTrendSlot"></div><div id="entryHorizontalSlot"></div></div>
+        <button id="attachSelectedStructure">加入当前选中线</button>
+        <button id="clearStructureSet">清空结构组合</button>
+        <div class="mutedNote">先在主图“选择”模式点击趋势线，再加入；再选择水平线并加入。两条线会同时保留。</div>
+      </div>
+      <div class="entrySetupBox">
+        <h4>② 买点研究区间</h4>
+        <div id="entryZoneText" class="entryZoneText">未框选</div>
+        <button id="selectEntryZone" class="primary">在主图拖选区间</button>
+        <button id="clearEntryZone">清空区间</button>
+        <div class="mutedNote">区间可以覆盖 8H 大阳线形成之前及前几根 8H K 线；低周期 Entry 允许发生在 8H 收盘之前。</div>
+      </div>
+      <div class="entrySetupBox">
+        <h4>③ 低周期</h4>
+        <div id="entryTfChecks" class="entryTfChecks">
+          <label><input type="checkbox" value="1h" checked>1H</label>
+          <label><input type="checkbox" value="15m" checked>15m</label>
+          <label><input type="checkbox" value="5m" checked>5m</label>
+          <label><input type="checkbox" value="1m" checked>1m</label>
+        </div>
+        <label>拒绝原因
+          <select id="entryRejectReason">
+            <option>太早</option><option>太晚</option><option>低周期结构不成立</option>
+            <option>高周期仍不安全</option><option>回调太深</option><option>没有真正止跌</option>
+            <option>衍生品数据不支持</option><option>盈亏比不好</option><option>其他</option>
+          </select>
+        </label>
+      </div>
+      <div class="entrySetupBox">
+        <h4>④ Discovery 状态</h4>
+        <div id="entryDiscoverySummary">选择结构和区间后开始扫描。</div>
+        <button id="generateEntryStrategy">从当前发现生成策略草案</button>
+        <div class="mutedNote">当前区间只负责发现假设。正式策略必须去其他历史结构做验证。</div>
+      </div>
+    </div>
+
+    <div id="entryMiniCharts" class="entryMiniCharts"></div>
+
+    <div class="entryResearchGrid">
+      <section class="entryResearchBox">
+        <h4>候选买点 · 由你评价</h4>
+        <div id="entryCandidateDetail" class="entryCandidateDetail">点击候选查看完整因子快照。</div>
+        <div id="entryCandidateList" class="entryCandidateList">尚未扫描。</div>
+      </section>
+      <section class="entryResearchBox">
+        <h4>条件化因子探索器</h4>
+        <div id="conditionalFactorTable">尚未扫描。</div>
+      </section>
+    </div>
+
+    <section class="entryResearchBox strategyDraftBox">
+      <h4>策略草案</h4>
+      <pre id="strategyDraft">尚未生成。</pre>
+    </section>
   </div>
 
 <div class="panel contextPanel">
