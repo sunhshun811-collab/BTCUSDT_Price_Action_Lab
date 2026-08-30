@@ -28,3 +28,8 @@ export function toCandleRows(rows){
 export function toVolumeRows(rows){
   return rows.map(r=>({time:r[0],value:r[5],color:r[4]>=r[1]?'rgba(47,209,139,.45)':'rgba(255,100,112,.45)'}));
 }
+
+
+export async function loadContext(month){
+  return ungzipJson(`${BASE}context/${month}.json.gz`);
+}

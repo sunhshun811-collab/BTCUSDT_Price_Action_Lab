@@ -74,6 +74,22 @@
             </div>
             <div id="chartWrap" class="panel chartWrap"><div id="chart"></div></div>
 
+
+            <div class="panel contextPanel">
+              <div class="sectionHead">
+                <div><h3>Binance 永续衍生品上下文</h3><span>与主图十字光标联动 · Funding / OI / Basis / Positioning</span></div>
+                <span class="ctxSource">K线及价格类数据：Binance USD-M BTCUSDT</span>
+              </div>
+              <div id="contextCards" class="contextCards"></div>
+              <div class="contextGrid">
+                <canvas id="ctxFunding"></canvas>
+                <canvas id="ctxOI"></canvas>
+                <canvas id="ctxBasis"></canvas>
+                <canvas id="ctxTaker"></canvas>
+              </div>
+              <div class="contextNote">本页先做单月数据可用性与交互验证；这些是市场状态变量，不代表已经形成可交易 Alpha。</div>
+            </div>
+
             <div class="panel strategyPanel">
               <div class="sectionHead">
                 <div><h3>策略草稿台</h3><span>用于交互式探索，不是正式OOS回测</span></div>

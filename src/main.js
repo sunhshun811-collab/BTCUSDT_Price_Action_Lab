@@ -1,7 +1,8 @@
 
 import './style.css';
 import {createChart,CandlestickSeries,HistogramSeries,LineSeries,createSeriesMarkers,CrosshairMode} from 'lightweight-charts';
-import {loadIndex,loadMonths,toCandleRows,toVolumeRows} from './data.js';
+import {loadIndex,loadMonths,toCandleRows,toVolumeRows,loadContext} from './data.js';
+import {setContextData,renderContextAt} from './context.js';
 import {getDrawings,addDrawing,drawingsFor,undoDrawing,clearDrawings,getLabels,addLabel,downloadJson} from './annotations.js';
 import {scoreBars,previewTrades} from './strategy.js';
 
@@ -43,6 +44,7 @@ function buildMainChart(){
     const d=param.seriesData.get(candle);
     if(!d)return;
     $('#cursorInfo').innerHTML=`北京时间：${fmtBJ(Number(param.time),true)}<br>O ${num(d.open)} · H ${num(d.high)} · L ${num(d.low)} · C ${num(d.close)}`;
+    renderContextAt(Number(param.time));
   });
   chart.subscribeClick(handleChartClick);
 }
@@ -71,6 +73,8 @@ async function loadMain(){
     buildMainChart();
     candle.setData(toCandleRows(currentRows));volume.setData(toVolumeRows(currentRows));
     chart.timeScale().fitContent();renderDrawings();renderHumanMarkers();
+    const ctxMonth = currentMonth || chosen.at(-1);
+    try { setContextData(await loadContext(ctxMonth)); } catch(e) { console.warn('context load',e); }
     $('#dataStatus').textContent=` · ${currentRows.length.toLocaleString()} 根K线`;
   }catch(e){$('#dataStatus').textContent=` · 加载失败：${e.message}`;}
 }

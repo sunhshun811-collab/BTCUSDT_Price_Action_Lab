@@ -12,3 +12,10 @@ main{padding:12px}.panel{background:linear-gradient(180deg,rgba(16,29,43,.97),rg
 .labelsPanel{padding:13px}.tableWrap{overflow:auto;margin-top:12px;max-height:70vh}table{border-collapse:collapse;width:100%;font-size:10px}th,td{text-align:left;padding:7px;border-bottom:1px solid var(--line);white-space:nowrap}th{color:#91a8bd;position:sticky;top:0;background:#0c1621}.positive{color:var(--green)}.negative{color:var(--red)}
 footer{display:flex;justify-content:space-between;gap:10px;color:#6f849a;font-size:9px;padding:14px 19px}footer a{color:#819fbd}
 @media(max-width:1050px){.workspace{grid-template-columns:1fr}.leftPanel{position:static;max-height:none}.strategyControls{grid-template-columns:repeat(2,1fr)}.overviewGrid{grid-template-columns:1fr}}
+
+.contextPanel{margin-top:9px;padding:12px}.ctxSource{font-size:9px;color:#7fa3c5}
+.contextCards{display:grid;grid-template-columns:repeat(8,minmax(100px,1fr));gap:6px;margin-top:10px}
+.ctxCard{background:#09131d;border:1px solid var(--line);border-radius:8px;padding:8px;min-width:0}
+.ctxK{font-size:8px;color:var(--muted)}.ctxV{font-size:14px;font-weight:800;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ctxS{font-size:8px;color:#7f96ab;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.contextGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px}.contextGrid canvas{width:100%;height:150px;border:1px solid var(--line);border-radius:8px;background:#0a131d}.contextNote{font-size:9px;color:var(--muted);margin-top:7px}
+@media(max-width:1300px){.contextCards{grid-template-columns:repeat(4,1fr)}}@media(max-width:800px){.contextCards{grid-template-columns:repeat(2,1fr)}.contextGrid{grid-template-columns:1fr}}

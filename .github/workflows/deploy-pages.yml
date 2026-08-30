@@ -1,36 +1,65 @@
-name: Deploy Price Action Lab
+name: Build Binance Cloud Trial + Deploy Pages
+
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
+    inputs:
+      month:
+        description: "Trial month YYYY-MM; blank = previous complete UTC month"
+        required: false
+        default: ""
+  schedule:
+    - cron: "23 4 3 * *"
+
 permissions:
   contents: read
   pages: write
   id-token: write
+
 concurrency:
   group: price-action-pages
   cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build trial market dataset from Binance public archives
+        shell: bash
+        run: |
+          MONTH="${{ github.event.inputs.month }}"
+          if [ -n "$MONTH" ]; then
+            python scripts/build_binance_cloud_trial.py --month "$MONTH" --output public/data
+          else
+            python scripts/build_binance_cloud_trial.py --output public/data
+          fi
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+
       - run: npm install
       - run: npm run build
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url }}
     needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Deploy
-        id: deploy
+        id: deployment
         uses: actions/deploy-pages@v4
