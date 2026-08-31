@@ -1,9 +1,12 @@
-﻿node_modules/
-dist/
-.vscode/
-*.log
+﻿.vscode/
 __pycache__/
 
-# Machine-local BTCQuant runtime/logs
-research_logs/chatgpt_jobs/
-tools/chatgpt_runner/
+# Generated/local artifacts only
+node_modules/
+/dist/
+/research_logs/
+*.log
+.env
+.env.*
+Thumbs.db
+.DS_Store
