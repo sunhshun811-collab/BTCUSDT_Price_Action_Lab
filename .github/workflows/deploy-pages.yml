@@ -1,80 +1,46 @@
-name: Build Binance 12M Lab + Deploy Pages
-
+name: Deploy Price Action Lab
 on:
   push:
-    branches: ["main"]
+    branches: [main]
   workflow_dispatch:
-    inputs:
-      months_back:
-        description: "Complete calendar months of Binance Klines"
-        required: false
-        default: "12"
-      metrics_days:
-        description: "Recent days of Binance Futures Metrics"
-        required: false
-        default: "90"
-  schedule:
-    - cron: "23 4 3 * *"
-
 permissions:
   contents: read
   pages: write
   id-token: write
-
 concurrency:
   group: price-action-pages
   cancel-in-progress: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Restore Binance public archive cache
-        uses: actions/cache@v4
-        with:
-          path: .cache/binance
-          key: ${{ runner.os }}-binance-palab-v2-${{ github.run_number }}
-          restore-keys: |
-            ${{ runner.os }}-binance-palab-v2-
-
-      - name: Build 12-month Binance market dataset
-        shell: bash
+      - name: Attach Data Foundation V10 from data-v10 branch
         run: |
-          MONTHS="${{ github.event.inputs.months_back }}"
-          METRICS="${{ github.event.inputs.metrics_days }}"
-          [ -z "$MONTHS" ] && MONTHS="12"
-          [ -z "$METRICS" ] && METRICS="90"
-          python scripts/build_binance_cloud_history.py \
-            --months-back "$MONTHS" \
-            --metrics-days "$METRICS" \
-            --output public/data \
-            --cache .cache/binance
-
+          git fetch origin data-v10 || true
+          if git show-ref --verify --quiet refs/remotes/origin/data-v10; then
+            rm -rf public/data/v10
+            git archive origin/data-v10 public/data/v10 | tar -x
+            echo "Using GitHub data-v10 branch."
+          else
+            echo "data-v10 branch not built yet; frontend will use legacy data fallback."
+          fi
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
-
+          node-version: '22'
       - run: npm install
       - run: npm run build
-
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
-
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deploy.outputs.page_url }}
     needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Deploy
-        id: deployment
+        id: deploy
         uses: actions/deploy-pages@v4

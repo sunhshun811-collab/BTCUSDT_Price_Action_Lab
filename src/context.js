@@ -21,7 +21,8 @@ function card(label,value,sub=''){
 function line(canvas,key,label,formatter=x=>fmt(x)){
   const ctx=canvas.getContext('2d'),dpr=devicePixelRatio||1,w=Math.max(canvas.clientWidth,320),h=150;
   canvas.width=w*dpr;canvas.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
-  const data=rows.map(x=>[x.time,x[key]]).filter(x=>x[1]!=null&&Number.isFinite(Number(x[1])));
+  const raw=rows.map(x=>[x.time,x[key]]).filter(x=>x[1]!=null&&Number.isFinite(Number(x[1])));
+  const stride=Math.max(1,Math.ceil(raw.length/6000));const data=raw.filter((_,i)=>i%stride===0||i===raw.length-1);
   ctx.fillStyle='#0a131d';ctx.fillRect(0,0,w,h);
   ctx.font='10px system-ui';ctx.fillStyle='#9aafc4';ctx.fillText(label,10,16);
   if(data.length<2){ctx.fillText('暂无数据',10,38);return}
@@ -36,10 +37,10 @@ function line(canvas,key,label,formatter=x=>fmt(x)){
   ctx.fillText(dt(data[0][0]),L,h-4);const end=dt(data.at(-1)[0]);ctx.fillText(end,w-R-70,h-4);
 }
 function renderCharts(){
-  line($('#ctxFunding'),'funding','Funding Rate',x=>pct(x,4));
-  line($('#ctxOI'),'oi_usd','Open Interest (USD)',compact);
-  line($('#ctxBasis'),'basis_bps','Mark / Index Basis',x=>bp(x,1));
-  line($('#ctxTaker'),'taker_ls_ratio','Taker Long/Short Ratio',x=>fmt(x,2));
+  line($('#ctxFunding'),'funding','资金费率',x=>pct(x,4));
+  line($('#ctxOI'),'oi_usd','持仓量（OI，USD）',compact);
+  line($('#ctxBasis'),'basis_bps','Mark / Index 基差',x=>bp(x,1));
+  line($('#ctxTaker'),'taker_ls_ratio','主动买卖比',x=>fmt(x,2));
 }
 export function setContextData(x){
   rows=(x?.rows||[]).sort((a,b)=>a.time-b.time);
@@ -50,13 +51,13 @@ export function renderContextAt(t){
   const x=nearest(Number(t));if(!x)return;
   $('#contextCards').innerHTML=[
     card('北京时间',dt(x.time),'5分钟衍生品状态'),
-    card('Funding',pct(x.funding,4),`7日Z ${fmt(x.funding_z7d,2)}`),
-    card('OI',compact(x.oi_usd),`5m ${pct(x.oi_change_5m)} · 1h ${pct(x.oi_change_1h)}`),
-    card('Basis',bp(x.basis_bps),`7日Z ${fmt(x.basis_bps_z7d,2)}`),
+    card('资金费率',pct(x.funding,4),`7日Z ${fmt(x.funding_z7d,2)} · 30日Z ${fmt(x.funding_z30d,2)}`),
+    card('持仓量（OI）',compact(x.oi_usd),`5m ${pct(x.oi_change_5m)} · 1h ${pct(x.oi_change_1h)} · 4h ${pct(x.oi_change_4h)}`),
+    card('基差（Basis）',bp(x.basis_bps),`7日Z ${fmt(x.basis_bps_z7d,2)}`),
     card('Premium',bp(x.premium_bps),'Binance Premium Index'),
-    card('Global L/S',fmt(x.global_ls_ratio,3),'账户多空比'),
-    card('Top Position L/S',fmt(x.top_pos_ratio,3),'大户持仓多空比'),
-    card('Taker L/S',fmt(x.taker_ls_ratio,3),'主动成交多空比')
+    card('全市场多空比',fmt(x.global_ls_ratio,3),'账户多空比'),
+    card('大户持仓多空比',fmt(x.top_pos_ratio,3),'Top Position L/S'),
+    card('主动买卖比',fmt(x.taker_ls_ratio,3),`主动买入占比 ${pct(x.taker_buy_share)}`)
   ].join('');
 }
 window.addEventListener('resize',()=>{if(rows.length)renderCharts()});

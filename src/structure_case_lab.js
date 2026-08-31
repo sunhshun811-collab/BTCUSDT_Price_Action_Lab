@@ -1,6 +1,7 @@
 
 import {createChart,CandlestickSeries,LineSeries,createSeriesMarkers,CrosshairMode} from 'lightweight-charts';
-import {loadMonths,loadContexts,toCandleRows} from './data.js';
+import {toCandleRows} from './data.js';
+import {loadMonthsSmart as loadMonths,loadContextsSmart as loadContexts} from './data_foundation_v10.js';
 import {getDrawings} from './annotations.js';
 import {TF_SECONDS,linePrice,explainCase,explainIdealZone,classifyByIdealZone,buildCaseDraft} from './case_entry_research.js';
 
@@ -14,6 +15,8 @@ const fmtBJ=sec=>new Intl.DateTimeFormat('zh-CN',{timeZone:BJ,year:'numeric',mon
 const num=x=>x==null||!Number.isFinite(Number(x))?'—':Number(x).toLocaleString('en-US',{maximumFractionDigits:2});
 const dec=(x,d=2)=>x==null||!Number.isFinite(Number(x))?'—':Number(x).toFixed(d);
 const pct=x=>x==null||!Number.isFinite(Number(x))?'—':`${(Number(x)*100).toFixed(2)}%`;
+const sourceOk=(mask,bit)=>Number.isFinite(Number(mask))&&((Number(mask)|0)&bit)!==0;
+const dataState=(mask,bit)=>sourceOk(mask,bit)?'完整':'⚠ 缺失';
 const JUDGE_LABEL={
   strong_long:'强烈做多',
   long:'可以做多',
@@ -81,7 +84,7 @@ async function loadTf(indexData,tf,from,to){
 }
 async function loadCtx(indexData,from,to){
   const months=monthsFor(indexData,'5m',from,to);if(!months.length)return[];
-  try{return (await loadContexts(months)).rows||[]}catch{return[]}
+  try{return (await loadContexts(months,'5m')).rows||[]}catch{return[]}
 }
 function miniOptions(){
   return {
@@ -395,18 +398,34 @@ export function initStructureCaseLab(api){
       </div>
 
       <div class="detailSection">
-        <h5>衍生品状态与过程</h5>
+        <h5>Binance 永续衍生品状态与过程</h5>
         <div class="detailGrid">
-          <div class="detailKV"><span>资金费率 7日Z</span><span>${dec(x.funding_z7d,3)}</span></div>
-          <div class="detailKV"><span>Basis 7日Z</span><span>${dec(x.basis_bps_z7d,3)}</span></div>
-          <div class="detailKV"><span>持仓量（OI）1小时变化</span><span>${pct(x.oi_change_1h)}</span></div>
-          <div class="detailKV"><span>主动买卖比</span><span>${dec(x.taker_ls_ratio,3)}</span></div>
+          <div class="detailKV"><span>资金费率</span><span>${pct(x.funding_rate,4)}</span></div>
+          <div class="detailKV"><span>资金费率 7日Z / 30日Z</span><span>${dec(x.funding_z7d,2)} / ${dec(x.funding_z30d,2)}</span></div>
+          <div class="detailKV"><span>Mark / Index</span><span>${num(x.mark_price)} / ${num(x.index_price)}</span></div>
+          <div class="detailKV"><span>基差（Basis）</span><span>${dec(x.basis_bps,2)} bp · Z7 ${dec(x.basis_bps_z7d,2)}</span></div>
+          <div class="detailKV"><span>Premium</span><span>${dec(x.premium_bps,2)} bp</span></div>
+          <div class="detailKV"><span>持仓量（OI）USD</span><span>${num(x.open_interest_value)}</span></div>
+          <div class="detailKV"><span>OI 5m / 15m</span><span>${pct(x.oi_change_5m)} / ${pct(x.oi_change_15m)}</span></div>
+          <div class="detailKV"><span>OI 1h / 4h</span><span>${pct(x.oi_change_1h)} / ${pct(x.oi_change_4h)}</span></div>
+          <div class="detailKV"><span>大户账户多空比</span><span>${dec(x.top_account_ls_ratio,3)}</span></div>
+          <div class="detailKV"><span>大户持仓多空比</span><span>${dec(x.top_position_ls_ratio,3)}</span></div>
+          <div class="detailKV"><span>全市场账户多空比</span><span>${dec(x.global_ls_ratio,3)}</span></div>
+          <div class="detailKV"><span>Metrics 主动多空量比</span><span>${dec(x.metrics_taker_ls_ratio,3)}</span></div>
+          <div class="detailKV"><span>K线主动买卖比</span><span>${dec(x.taker_buy_sell_ratio,3)}</span></div>
+          <div class="detailKV"><span>主动买入占比</span><span>${pct(x.taker_buy_share)}</span></div>
         </div>
         <div class="detailCallout">
-          <b>持仓量（OI）过程：</b>
+          <b>持仓量（OI）1小时变化过程：</b>
           区间开始 ${pct(p.oi_change_1h?.zone)} → 局部低点 ${pct(p.oi_change_1h?.low)} → 触发前 ${pct(p.oi_change_1h?.preTrigger)} → Entry ${pct(p.oi_change_1h?.entry)}<br>
-          <b>资金费率过程：</b>
+          <b>主动买卖比过程：</b>
+          ${dec(p.taker_ls_ratio?.zone)} → ${dec(p.taker_ls_ratio?.low)} → ${dec(p.taker_ls_ratio?.preTrigger)} → ${dec(p.taker_ls_ratio?.entry)}<br>
+          <b>资金费率 7日Z：</b>
           ${dec(p.funding_z7d?.zone)} → ${dec(p.funding_z7d?.low)} → ${dec(p.funding_z7d?.preTrigger)} → ${dec(p.funding_z7d?.entry)}
+        </div>
+        <div class="detailCallout">
+          <b>数据覆盖：</b>
+          主动成交 ${dataState(x.source_mask,1)} · Funding ${dataState(x.source_mask,2)} · Mark ${dataState(x.source_mask,4)} · Index ${dataState(x.source_mask,8)} · Premium ${dataState(x.source_mask,16)} · OI/Positioning ${dataState(x.source_mask,32)}
         </div>
       </div>
 

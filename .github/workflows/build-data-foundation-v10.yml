@@ -1,0 +1,122 @@
+name: Build Data Foundation V10
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/build_data_foundation_v10.py
+      - scripts/verify_data_foundation_v10.py
+      - src/data_foundation_v10.js
+      - .github/workflows/build-data-foundation-v10.yml
+      - .github/workflows/deploy-pages.yml
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Build mode
+        required: true
+        default: auto
+        type: choice
+        options: [auto, update, repair, full]
+  schedule:
+    - cron: '17 3 * * *'
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: btcusdt-data-foundation-v10
+  cancel-in-progress: false
+jobs:
+  data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore previous V10 shards from GitHub data branch
+        run: |
+          git fetch origin data-v10 || true
+          if git show-ref --verify --quiet refs/remotes/origin/data-v10; then
+            rm -rf public/data/v10
+            git archive origin/data-v10 public/data/v10 | tar -x
+            echo "Restored existing data-v10 branch."
+          else
+            mkdir -p public/data/v10
+            echo "No data-v10 branch yet; first run will bootstrap history."
+          fi
+      - name: Build processed Binance cloud data
+        env:
+          MODE: ${{ github.event.inputs.mode || 'auto' }}
+        run: |
+          python scripts/build_data_foundation_v10.py --repo-root . --start-month 2020-01 --end-month auto --mode "$MODE"
+          python scripts/verify_data_foundation_v10.py --repo-root .
+      - name: Publish processed shards to data-v10 branch
+        run: |
+          rm -rf /tmp/v10data
+          mkdir -p /tmp/v10data
+          cp -a public/data/v10/. /tmp/v10data/
+
+          # Generated shards are intentionally not committed to main. Reset the main
+          # worktree before switching to the dedicated data branch.
+          git reset --hard HEAD
+          git clean -fd public/data/v10 || true
+
+          if git show-ref --verify --quiet refs/remotes/origin/data-v10; then
+            git switch -C data-v10 origin/data-v10
+          else
+            git switch --orphan data-v10
+            git rm -rf . || true
+          fi
+          rm -rf public/data/v10
+          mkdir -p public/data/v10
+          cp -a /tmp/v10data/. public/data/v10/
+          printf 'public/data/v10/** -diff -text\n' > .gitattributes
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A public/data/v10 .gitattributes
+          if git diff --cached --quiet; then
+            echo "No data changes"
+            exit 0
+          fi
+          git commit -m "Update Binance Data Foundation V10"
+          for i in 1 2 3 4 5; do
+            git -c http.version=HTTP/1.1 push origin data-v10 && exit 0
+            sleep $((i*10))
+            git fetch origin data-v10
+            git rebase origin/data-v10 || true
+          done
+          exit 1
+
+  deploy_pages:
+    needs: data
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: price-action-pages
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Attach Data Foundation V10 from data-v10 branch
+        run: |
+          git fetch origin data-v10 || true
+          if git show-ref --verify --quiet refs/remotes/origin/data-v10; then
+            rm -rf public/data/v10
+            git archive origin/data-v10 public/data/v10 | tar -x
+          fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

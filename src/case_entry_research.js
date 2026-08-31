@@ -67,10 +67,10 @@ function processSnapshot(ctx,zoneStart,localLowTime,triggerTime,entryTime){
   const z=pick(zoneStart),l=pick(localLowTime),p=pick(Math.max(zoneStart,triggerTime-3600)),e=pick(entryTime);
   const field=k=>({zone:z?.[k]??null,low:l?.[k]??null,preTrigger:p?.[k]??null,entry:e?.[k]??null});
   return {
-    funding_z7d:field('funding_z7d'),
-    basis_bps_z7d:field('basis_bps_z7d'),
-    oi_change_1h:field('oi_change_1h'),
-    taker_ls_ratio:field('taker_ls_ratio')
+    funding_rate:field('funding_rate'),funding_z7d:field('funding_z7d'),funding_z30d:field('funding_z30d'),
+    basis_bps:field('basis_bps'),basis_bps_z7d:field('basis_bps_z7d'),basis_bps_z30d:field('basis_bps_z30d'),
+    oi_change_1h:field('oi_change_1h'),oi_change_4h:field('oi_change_4h'),
+    taker_ls_ratio:field('taker_ls_ratio'),taker_buy_share:field('taker_buy_share')
   };
 }
 function featureRecord(rows,i,tf,horizontal,trendline,zone,ctx,knownH,knownL){
@@ -103,8 +103,11 @@ function featureRecord(rows,i,tf,horizontal,trendline,zone,ctx,knownH,knownL){
     downsideEfficiency:eff,downsideEfficiencyChange:effImprove,lowerWickRatio:lowerWick,
     volumeAsymmetry:volAsym,compression,
     horizontalDistanceAtr:hDist,trendlineDistanceAtr:tDist,undercutDepthAtr:undercut,reclaim,
-    funding_z7d:c.funding_z7d??null,basis_bps_z7d:c.basis_bps_z7d??null,
-    oi_change_1h:c.oi_change_1h??null,taker_ls_ratio:c.taker_ls_ratio??null,
+    funding_rate:c.funding_rate??c.funding??null,funding_z7d:c.funding_z7d??null,funding_z30d:c.funding_z30d??null,
+    mark_price:c.mark_price??null,index_price:c.index_price??null,premium_bps:c.premium_bps??null,basis_bps:c.basis_bps??null,basis_bps_z7d:c.basis_bps_z7d??null,basis_bps_z30d:c.basis_bps_z30d??null,
+    open_interest:c.open_interest??null,open_interest_value:c.open_interest_value??c.oi_usd??null,oi_change_5m:c.oi_change_5m??null,oi_change_15m:c.oi_change_15m??null,oi_change_1h:c.oi_change_1h??null,oi_change_4h:c.oi_change_4h??null,oi_z7d:c.oi_z7d??null,
+    top_account_ls_ratio:c.top_account_ls_ratio??null,top_position_ls_ratio:c.top_position_ls_ratio??c.top_pos_ratio??null,global_ls_ratio:c.global_ls_ratio??null,metrics_taker_ls_ratio:c.metrics_taker_ls_ratio??null,
+    taker_buy_sell_ratio:c.taker_buy_sell_ratio??c.taker_ls_ratio??null,taker_buy_share:c.taker_buy_share??null,taker_ls_ratio:c.taker_ls_ratio??c.taker_buy_sell_ratio??null,source_mask:c.source_mask??c.data_quality_mask??null,
     localLowTime:minLowTime,
     process:processSnapshot(ctx,zone.start,minLowTime,t+tfSec,t+tfSec)
   };

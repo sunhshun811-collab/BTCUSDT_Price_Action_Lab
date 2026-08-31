@@ -1,7 +1,8 @@
 
 import './style.css';
 import {createChart,CandlestickSeries,HistogramSeries,LineSeries,createSeriesMarkers,CrosshairMode} from 'lightweight-charts';
-import {loadIndex,loadMonths,loadContexts,toCandleRows,toVolumeRows} from './data.js';
+import {toCandleRows,toVolumeRows} from './data.js';
+import {loadIndexSmart as loadIndex,loadMonthsSmart as loadMonths,loadContextsSmart as loadContexts,foundationStatus} from './data_foundation_v10.js';
 import {setContextData,renderContextAt} from './context.js';
 import {getDrawings,addDrawing,updateDrawing,removeDrawing,drawingsFor,drawingsForView,undoDrawing,clearDrawings,getLabels,addLabel,downloadJson} from './annotations.js';
 import {analyzeTrendline} from './trendline_research.js';
@@ -296,12 +297,12 @@ async function loadWindow(from,to,label){
   loadedRows=await loadMonths(currentTF,months);currentRows=loadedRows.filter(r=>r[0]>=from&&r[0]<to);
   if(!currentRows.length){$('#dataStatus').textContent=' · 范围内无K线';return}
   baseWindowRows=currentRows.slice();
-  try{const cx=await loadContexts(months);fullContextRows=(cx.rows||[]).slice()}catch(e){console.warn(e);fullContextRows=[]}
+  try{const cx=await loadContexts(months,currentTF);fullContextRows=(cx.rows||[]).slice()}catch(e){console.warn(e);fullContextRows=[]}
   showRowsForResearch(baseWindowRows,fullContextRows);
   researchDataChanged();
   if(structureEntryLab)structureEntryLab.dataChanged();
   $('#rangeHint').textContent=`全局 ${globalRange.startDate} → ${globalRange.endDate} · ${TF_LABEL[currentTF]} · ${currentRows.length.toLocaleString()} 根K线 · ${months.length}个月分片`;
-  $('#dataStatus').textContent=` · ${currentRows.length.toLocaleString()} 根K线`;
+  const fs=await foundationStatus();$('#dataStatus').textContent=` · ${currentRows.length.toLocaleString()} 根K线${fs.available?' · 云端数据V10':' · 兼容旧数据'}`;
 }
 async function loadGlobalRange(label='全局日期范围'){
   if(!globalRange)initGlobalRange();
@@ -352,7 +353,7 @@ function renderLabelsTable(){
   $('#labelStats').textContent=`累计 ${v.length} 个判断标签。`;$('#labelsTable').innerHTML='<thead><tr><th>北京时间</th><th>周期</th><th>判断</th><th>置信度</th><th>价格</th><th>备注</th></tr></thead><tbody>'+v.map(x=>`<tr><td>${x.beijing_time}</td><td>${TF_LABEL[x.timeframe]}</td><td>${map[x.label]}</td><td>${x.confidence}</td><td>${num(x.price)}</td><td>${x.note||''}</td></tr>`).join('')+'</tbody>'
 }
 async function init(){
-  indexData=await (await import('./data.js')).loadIndex();initGlobalRange();bindSliders();
+  indexData=await loadIndex();initGlobalRange();bindSliders();
 
   drawingEngine=createTrendDrawingEngine({
     container:()=>$('#chart'),
