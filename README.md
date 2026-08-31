@@ -1,74 +1,46 @@
-# BTCUSDT Price Action Lab
+# BTCUSDT Price Action Lab — Data Foundation V10
 
-独立于 `BTCUSDT_Quant_Research_Kit` 的交互式 Price Action / Market Structure 策略实验室。
+V10 is a data-layer upgrade on top of V9 Research UI. It does not add a new trading strategy.
 
-目标不是马上声称“找到赚钱策略”，而是让主观图形交易可以被**画出来、保存下来、打标签、逐步量化和严格验证**。
+## Storage decision
 
-## 第一版功能
+Full historical market data is **not** downloaded to the Windows desktop. GitHub Actions downloads Binance public data, preprocesses it and stores the browser-ready monthly shards in a dedicated repository branch:
 
-- Binance USD-M `BTCUSDT` 永续合约。
-- 8H / 4H / 1H / 15m / 5m / 1m 六周期。
-- 所有网页时间：`Asia/Shanghai` 北京时间（UTC+8）。
-- 主图可原生缩放、拖动、十字光标。
-- 手动画：
-  - 趋势线（两点）
-  - 水平关键位
-  - 撤销 / 清空
-  - 趋势线右侧延伸
-- 六周期同步月度总览。
-- 人工教学标签：
-  - 强烈做多
-  - 偏多
-  - 不交易
-  - 偏空
-  - 强烈做空
-  - 置信度 50–100
-  - 自由备注
-- 标签和趋势线持久化在浏览器 `localStorage`，并可一键导出 JSON。
-- 一个透明的“策略草稿台”：
-  - 趋势/均线
-  - 前高/前低突破
-  - 成交量确认
-  - No-trade 置信阈值
-- 草稿台只是交互式探索，不代替正式 Train / Validation / Beta / 10x MAE 回测。
+`data-v10` branch → `public/data/v10/`
 
-网页使用 TradingView Lightweight Charts™ 5.2.1，并按其许可证要求显示 TradingView attribution。
+The normal `main` branch remains code-only, so the large generated history does not make the Desktop working tree fall behind after every scheduled data update.
 
-## 数据
+During every Pages build, the workflow attaches `public/data/v10` from the `data-v10` branch into the Vite `public/` tree. The browser therefore downloads the data from the same GitHub Pages origin, not from Binance and not from the Desktop.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\UPDATE_DATA_AND_PUBLISH.ps1
-```
+## Included fields
 
-默认下载 `2026-01-01 UTC` 至当前时间的：
+Klines: OHLC, base volume, quote volume, trade count, taker-buy base volume, taker-buy quote volume.
 
-`8h,4h,1h,15m,5m,1m`
+Derived active-flow fields: taker sell volume, taker buy/sell ratio, taker buy share.
 
-数据源：Binance USD-M Futures public Kline API。
+Derivatives/context: Funding, Funding Z7/Z30, Mark, Index, Premium, Basis bps/Z7/Z30, OI, OI USD, OI changes 5m/15m/1h/4h, OI Z7, top-trader account ratio, top-trader position ratio, global long/short ratio, metrics taker ratio.
 
-数据按 `timeframe / UTC月份` gzip 分块。网页显示时统一转北京时间。
+## Missing-data policy
 
-## 本地交互开发
+No OI/Positioning value is invented. Monthly Vision archives are tried first, daily Vision archives second, and supported public REST tail endpoints are used only where appropriate. Remaining missing source data is explicitly recorded through `source_mask` and `quality/*.json`.
+
+## Faster visualization
+
+- All six Kline timeframes are prebuilt in GitHub Actions.
+- Browser no longer has to aggregate 1m into 5m/15m/1h/4h/8h.
+- Context features are also precomputed.
+- Files are monthly Float64 binary shards + gzip.
+- Browser uses revisioned Cache Storage plus in-memory decoded-shard cache.
+- Switching repeatedly among timeframes can reuse already downloaded shards.
+
+## First build
+
+After installation, the pushed workflow code automatically triggers `Build Data Foundation V10`. On the first run, because the `data-v10` branch does not yet contain `manifest.json`, `auto` mode bootstraps 2020-01 through the current month. Later scheduled runs restore the previous data branch and update only missing/recent months. The workflow then redeploys Pages with the refreshed data branch attached.
+
+## Install
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\RUN_LOCAL_DEV.ps1
+powershell -ExecutionPolicy Bypass -File .\INSTALL_DATA_FOUNDATION_V10.ps1
 ```
 
-然后打开 Vite 提示的本地地址。
-
-## GitHub 网络故障
-
-这个仓库从一开始就把“研究/数据成功”和“GitHub push 成功”分开。
-
-如果 GitHub 临时不可达：
-
-- 数据更新仍然算成功；
-- 本地 commit 已保存；
-- `.pending_push` 标记等待同步；
-- 之后只需要：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\PUSH_PENDING.ps1
-```
-
-不需要重新下载数据或重新做研究。
+No local Node.js is required by the installer and no Binance market data is downloaded to the desktop.

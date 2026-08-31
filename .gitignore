@@ -1,5 +1,9 @@
-node_modules/
+﻿node_modules/
 dist/
 .vscode/
 *.log
 __pycache__/
+
+# Machine-local BTCQuant runtime/logs
+research_logs/chatgpt_jobs/
+tools/chatgpt_runner/
