@@ -1,0 +1,26 @@
+{
+  "month": "2026-08",
+  "kline_1m": {
+    "expected": 44139,
+    "rows": 43200,
+    "coverage": 0.9787262964725073,
+    "missing": 939
+  },
+  "context_5m_rows": 8640,
+  "source_coverage": {
+    "kline_taker": 1.0,
+    "funding": 0.0,
+    "mark": 1.0,
+    "index": 1.0,
+    "premium": 1.0,
+    "metrics": 0.0
+  },
+  "sources": {
+    "klines": "daily",
+    "funding": "missing",
+    "mark": "daily",
+    "index": "daily",
+    "premium": "daily",
+    "metrics": "daily"
+  }
+}

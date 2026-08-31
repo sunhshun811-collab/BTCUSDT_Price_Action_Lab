@@ -1,0 +1,2167 @@
+{
+  "generated_at_utc": "2026-08-31T15:39:17.098392+00:00",
+  "months": {
+    "2020-01": {
+      "month": "2020-01",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 0.9994399641577061,
+        "index": 0.9994399641577061,
+        "premium": 0.9994399641577061,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "missing"
+      }
+    },
+    "2020-02": {
+      "month": "2020-02",
+      "kline_1m": {
+        "expected": 41760,
+        "rows": 41760,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8352,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "missing"
+      }
+    },
+    "2020-03": {
+      "month": "2020-03",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "missing"
+      }
+    },
+    "2020-04": {
+      "month": "2020-04",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "missing"
+      }
+    },
+    "2020-05": {
+      "month": "2020-05",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "missing"
+      }
+    },
+    "2020-06": {
+      "month": "2020-06",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "missing"
+      }
+    },
+    "2020-07": {
+      "month": "2020-07",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "missing"
+      }
+    },
+    "2020-08": {
+      "month": "2020-08",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "missing"
+      }
+    },
+    "2020-09": {
+      "month": "2020-09",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2020-10": {
+      "month": "2020-10",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2020-11": {
+      "month": "2020-11",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2020-12": {
+      "month": "2020-12",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 0.9995519713261649,
+        "index": 0.9995519713261649,
+        "premium": 0.9977598566308243,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2021-01": {
+      "month": "2021-01",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2021-02": {
+      "month": "2021-02",
+      "kline_1m": {
+        "expected": 40320,
+        "rows": 40320,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8064,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2021-03": {
+      "month": "2021-03",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2021-04": {
+      "month": "2021-04",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2021-05": {
+      "month": "2021-05",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2021-06": {
+      "month": "2021-06",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2021-07": {
+      "month": "2021-07",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 0.8387096774193549,
+        "index": 1.0,
+        "premium": 0.8387096774193549,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2021-08": {
+      "month": "2021-08",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2021-09": {
+      "month": "2021-09",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2021-10": {
+      "month": "2021-10",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2021-11": {
+      "month": "2021-11",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2021-12": {
+      "month": "2021-12",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2022-01": {
+      "month": "2022-01",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2022-02": {
+      "month": "2022-02",
+      "kline_1m": {
+        "expected": 40320,
+        "rows": 40320,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8064,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2022-03": {
+      "month": "2022-03",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2022-04": {
+      "month": "2022-04",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 0.9666666666666667,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2022-05": {
+      "month": "2022-05",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2022-06": {
+      "month": "2022-06",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2022-07": {
+      "month": "2022-07",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 0.967741935483871,
+        "index": 0.8064516129032258,
+        "premium": 0.9991039426523297,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2022-08": {
+      "month": "2022-08",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2022-09": {
+      "month": "2022-09",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2022-10": {
+      "month": "2022-10",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 0.967741935483871,
+        "index": 0.967741935483871,
+        "premium": 0.967741935483871,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2022-11": {
+      "month": "2022-11",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2022-12": {
+      "month": "2022-12",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2023-01": {
+      "month": "2023-01",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2023-02": {
+      "month": "2023-02",
+      "kline_1m": {
+        "expected": 40320,
+        "rows": 40320,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8064,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 0.9642857142857143,
+        "index": 0.9642857142857143,
+        "premium": 0.9642857142857143,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2023-03": {
+      "month": "2023-03",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2023-04": {
+      "month": "2023-04",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 0.9333333333333333,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2023-05": {
+      "month": "2023-05",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2023-06": {
+      "month": "2023-06",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2023-07": {
+      "month": "2023-07",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2023-08": {
+      "month": "2023-08",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2023-09": {
+      "month": "2023-09",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2023-10": {
+      "month": "2023-10",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2023-11": {
+      "month": "2023-11",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 0.9994212962962963,
+        "index": 0.999537037037037,
+        "premium": 0.9998842592592593,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2023-12": {
+      "month": "2023-12",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2024-01": {
+      "month": "2024-01",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2024-02": {
+      "month": "2024-02",
+      "kline_1m": {
+        "expected": 41760,
+        "rows": 41760,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8352,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2024-03": {
+      "month": "2024-03",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2024-04": {
+      "month": "2024-04",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2024-05": {
+      "month": "2024-05",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2024-06": {
+      "month": "2024-06",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2024-07": {
+      "month": "2024-07",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2024-08": {
+      "month": "2024-08",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2024-09": {
+      "month": "2024-09",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2024-10": {
+      "month": "2024-10",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2024-11": {
+      "month": "2024-11",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2024-12": {
+      "month": "2024-12",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2025-01": {
+      "month": "2025-01",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2025-02": {
+      "month": "2025-02",
+      "kline_1m": {
+        "expected": 40320,
+        "rows": 40320,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8064,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2025-03": {
+      "month": "2025-03",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2025-04": {
+      "month": "2025-04",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2025-05": {
+      "month": "2025-05",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2025-06": {
+      "month": "2025-06",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2025-07": {
+      "month": "2025-07",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2025-08": {
+      "month": "2025-08",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2025-09": {
+      "month": "2025-09",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2025-10": {
+      "month": "2025-10",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2025-11": {
+      "month": "2025-11",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2025-12": {
+      "month": "2025-12",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2026-01": {
+      "month": "2026-01",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2026-02": {
+      "month": "2026-02",
+      "kline_1m": {
+        "expected": 40320,
+        "rows": 40320,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8064,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2026-03": {
+      "month": "2026-03",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2026-04": {
+      "month": "2026-04",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2026-05": {
+      "month": "2026-05",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2026-06": {
+      "month": "2026-06",
+      "kline_1m": {
+        "expected": 43200,
+        "rows": 43200,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 0.9666666666666667,
+        "index": 0.9666666666666667,
+        "premium": 0.9666666666666667,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2026-07": {
+      "month": "2026-07",
+      "kline_1m": {
+        "expected": 44640,
+        "rows": 44640,
+        "coverage": 1.0,
+        "missing": 0
+      },
+      "context_5m_rows": 8928,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 1.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "monthly",
+        "funding": "monthly",
+        "mark": "monthly",
+        "index": "monthly",
+        "premium": "monthly",
+        "metrics": "daily"
+      }
+    },
+    "2026-08": {
+      "month": "2026-08",
+      "kline_1m": {
+        "expected": 44139,
+        "rows": 43200,
+        "coverage": 0.9787262964725073,
+        "missing": 939
+      },
+      "context_5m_rows": 8640,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 0.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
+      "sources": {
+        "klines": "daily",
+        "funding": "missing",
+        "mark": "daily",
+        "index": "daily",
+        "premium": "daily",
+        "metrics": "daily"
+      }
+    }
+  },
+  "incomplete_months": [
+    "2020-01",
+    "2020-02",
+    "2020-03",
+    "2020-04",
+    "2020-05",
+    "2020-06",
+    "2020-07",
+    "2020-08",
+    "2020-09",
+    "2020-10",
+    "2020-11",
+    "2020-12",
+    "2021-01",
+    "2021-02",
+    "2021-03",
+    "2021-04",
+    "2021-05",
+    "2021-06",
+    "2021-07",
+    "2021-08",
+    "2021-09",
+    "2021-10",
+    "2021-11",
+    "2021-12",
+    "2022-01",
+    "2022-02",
+    "2022-03",
+    "2022-04",
+    "2022-05",
+    "2022-06",
+    "2022-07",
+    "2022-08",
+    "2022-09",
+    "2022-10",
+    "2022-11",
+    "2022-12",
+    "2023-01",
+    "2023-02",
+    "2023-03",
+    "2023-04",
+    "2023-05",
+    "2023-06",
+    "2023-07",
+    "2023-08",
+    "2023-09",
+    "2023-10",
+    "2023-11",
+    "2023-12",
+    "2024-01",
+    "2024-02",
+    "2024-03",
+    "2024-04",
+    "2024-05",
+    "2024-06",
+    "2024-07",
+    "2024-08",
+    "2024-09",
+    "2024-10",
+    "2024-11",
+    "2024-12",
+    "2025-01",
+    "2025-02",
+    "2025-03",
+    "2025-04",
+    "2025-05",
+    "2025-06",
+    "2025-07",
+    "2025-08",
+    "2025-09",
+    "2025-10",
+    "2025-11",
+    "2025-12",
+    "2026-01",
+    "2026-02",
+    "2026-03",
+    "2026-04",
+    "2026-05",
+    "2026-06",
+    "2026-07",
+    "2026-08"
+  ]
+}

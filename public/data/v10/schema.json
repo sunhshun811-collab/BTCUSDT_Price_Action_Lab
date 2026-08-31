@@ -1,0 +1,50 @@
+{
+  "kline_schema": [
+    "time",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "quote_volume",
+    "trade_count",
+    "taker_buy_volume",
+    "taker_buy_quote_volume"
+  ],
+  "context_schema": [
+    "time",
+    "funding_rate",
+    "funding_z7d",
+    "funding_z30d",
+    "mark_price",
+    "index_price",
+    "premium_bps",
+    "basis_bps",
+    "basis_bps_z7d",
+    "basis_bps_z30d",
+    "open_interest",
+    "open_interest_value",
+    "oi_change_5m",
+    "oi_change_15m",
+    "oi_change_1h",
+    "oi_change_4h",
+    "oi_z7d",
+    "top_account_ls_ratio",
+    "top_position_ls_ratio",
+    "global_ls_ratio",
+    "metrics_taker_ls_ratio",
+    "taker_buy_sell_ratio",
+    "taker_buy_share",
+    "trade_count",
+    "quote_volume",
+    "source_mask"
+  ],
+  "source_bits": {
+    "kline_taker": 1,
+    "funding": 2,
+    "mark": 4,
+    "index": 8,
+    "premium": 16,
+    "metrics": 32
+  }
+}

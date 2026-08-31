@@ -1,0 +1,26 @@
+{
+  "month": "2021-08",
+  "kline_1m": {
+    "expected": 44640,
+    "rows": 44640,
+    "coverage": 1.0,
+    "missing": 0
+  },
+  "context_5m_rows": 8928,
+  "source_coverage": {
+    "kline_taker": 1.0,
+    "funding": 1.0,
+    "mark": 1.0,
+    "index": 1.0,
+    "premium": 1.0,
+    "metrics": 0.0
+  },
+  "sources": {
+    "klines": "monthly",
+    "funding": "monthly",
+    "mark": "monthly",
+    "index": "monthly",
+    "premium": "monthly",
+    "metrics": "daily"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "month": "2023-11",
+  "kline_1m": {
+    "expected": 43200,
+    "rows": 43200,
+    "coverage": 1.0,
+    "missing": 0
+  },
+  "context_5m_rows": 8640,
+  "source_coverage": {
+    "kline_taker": 1.0,
+    "funding": 1.0,
+    "mark": 0.9994212962962963,
+    "index": 0.999537037037037,
+    "premium": 0.9998842592592593,
+    "metrics": 0.0
+  },
+  "sources": {
+    "klines": "monthly",
+    "funding": "monthly",
+    "mark": "monthly",
+    "index": "monthly",
+    "premium": "monthly",
+    "metrics": "daily"
+  }
+}
