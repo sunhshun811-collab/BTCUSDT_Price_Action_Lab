@@ -7,6 +7,9 @@
 
 ### **[👉 点击打开 BTCUSDT Price Action Lab 可视化界面](https://sunhshun811-collab.github.io/BTCUSDT_Price_Action_Lab/)**
 
+### **[👉 点击打开 BTCUSDT Price Action Lab 功能树网络图](https://sunhshun811-collab.github.io/BTCUSDT_Price_Action_Lab/function-map.html)**
+
+- 功能树网络图：可拖动节点、拖动画布、滚轮缩放，用于盘点当前系统功能、模块关系与裁剪讨论。
 - GitHub 仓库：[https://github.com/sunhshun811-collab/BTCUSDT_Price_Action_Lab](https://github.com/sunhshun811-collab/BTCUSDT_Price_Action_Lab)
 - 在线界面由 GitHub Pages / 仓库部署工作流发布。
 - 如果刚完成一次 push，GitHub Actions 与 Pages 可能需要等待片刻再刷新。
@@ -212,3 +215,4 @@ tools/btcquant_launcher/
 ## 风险说明
 
 本项目用于研究、可视化和策略实验，不构成投资建议。任何交易决策都应自行评估风险。
+

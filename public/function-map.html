@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BTCUSDT Price Action Lab 功能树网络图 · 流畅拖动版</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121932;
+      --panel2: #1a2345;
+      --line: #4a5d9a;
+      --text: #eef3ff;
+      --muted: #a6b2d9;
+      --accent: #7aa2ff;
+      --accent2: #62d0ff;
+      --warn: #ffd166;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(circle at top, #162040, var(--bg) 45%);
+      color: var(--text);
+    }
+    #toolbar {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      z-index: 20;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      background: rgba(10,14,28,0.78);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 10px 14px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.28);
+    }
+    #toolbar h1 {
+      font-size: 18px;
+      margin: 0 8px 0 0;
+      white-space: nowrap;
+    }
+    #toolbar .tip {
+      color: var(--muted);
+      font-size: 13px;
+      margin-right: auto;
+    }
+    #toolbar button {
+      background: linear-gradient(180deg, #263562, #1a2546);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    #toolbar button:hover { filter: brightness(1.08); }
+    #toolbar .badge {
+      font-size: 12px;
+      padding: 6px 10px;
+      background: rgba(122,162,255,0.12);
+      border: 1px solid rgba(122,162,255,0.28);
+      border-radius: 999px;
+      color: #d6e3ff;
+    }
+    #canvas {
+      position: absolute;
+      inset: 0;
+      cursor: grab;
+    }
+    #canvas.panning { cursor: grabbing; }
+    #viewport {
+      position: absolute;
+      inset: 0;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+    svg#links {
+      position: absolute;
+      inset: 0;
+      overflow: visible;
+      pointer-events: none;
+    }
+    .link {
+      stroke: var(--line);
+      stroke-width: 2;
+      opacity: 0.9;
+    }
+    .node {
+      position: absolute;
+      left: 0;
+      top: 0;
+      min-width: 170px;
+      max-width: 240px;
+      background: linear-gradient(180deg, var(--panel2), var(--panel));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.26);
+      user-select: none;
+      touch-action: none;
+      will-change: transform;
+    }
+    .node.root {
+      min-width: 240px;
+      background: linear-gradient(180deg, #23396e, #18254b);
+      border-color: rgba(122,162,255,0.35);
+    }
+    .node.group { border-color: rgba(98,208,255,0.24); }
+    .node .head {
+      padding: 12px 14px 8px;
+      font-weight: 700;
+      font-size: 15px;
+      color: white;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: inherit;
+    }
+    .node .icon {
+      width: 24px; height: 24px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      font-size: 13px;
+      flex: 0 0 auto;
+    }
+    .node .body {
+      padding: 10px 14px 13px;
+      font-size: 12.8px;
+      line-height: 1.52;
+      color: var(--muted);
+      white-space: pre-line;
+    }
+    .node .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0 14px 12px;
+    }
+    .tag {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #d9e5ff;
+    }
+    .legend {
+      position: fixed;
+      right: 12px;
+      bottom: 12px;
+      z-index: 20;
+      width: 300px;
+      background: rgba(10,14,28,0.78);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.28);
+    }
+    .legend h2 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+    .legend ul {
+      margin: 8px 0 0 18px;
+      padding: 0;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.55;
+    }
+    .legend .warn {
+      color: var(--warn);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div id="toolbar">
+    <h1>BTCUSDT Price Action Lab · 功能树网络图</h1>
+    <div class="tip">按住鼠标左键拖动节点；空白处按住左键拖动画布；滚轮缩放。</div>
+    <span class="badge">Root + 8 组 + 25 子能力</span>
+    <button id="fitBtn">居中适配</button>
+    <button id="expandBtn">展开布局</button>
+    <button id="compactBtn">紧凑布局</button>
+  </div>
+
+  <div id="canvas">
+    <div id="viewport">
+      <svg id="links"></svg>
+    </div>
+  </div>
+
+  <div class="legend">
+    <h2>怎么看这个图</h2>
+    <ul>
+      <li>中间是总系统，外圈是功能模块。</li>
+      <li>每个模块框里写了当前主要能力。</li>
+      <li>你可以拖动节点，像思维网络一样摆放。</li>
+      <li>后续我可以继续把它变成 <span class="warn">保留 / 合并 / 删除</span> 三色版本。</li>
+    </ul>
+  </div>
+
+  <script>
+    const nodes = [
+      { id: 'root', title: 'BTCUSDT Price Action Lab', icon: '🧠', cls: 'root', x: 860, y: 520,
+        body: '围绕 BTCUSDT 的 Price Action / Market Structure 研究与可视化实验室。\n用于盘点功能、识别冗余模块、讨论保留与裁剪。',
+        tags: ['在线可视化', '研究系统', '可复现'] },
+
+      { id: 'nav', title: '顶层入口', icon: '🧭', cls: 'group', x: 300, y: 120,
+        body: '主图编辑\n六周期总览\n人工教学数据\n策略开发室',
+        tags: ['导航层'] },
+
+      { id: 'chart', title: '图表与主图编辑', icon: '📈', cls: 'group', x: 1160, y: 80,
+        body: '周期选择\n全局日期范围\n应用到全部周期\n当前光标信息\n8H / 4H / 1H / 15m / 5m / 1m',
+        tags: ['主载体', '多周期'] },
+
+      { id: 'drawing', title: '画图工具', icon: '✏️', cls: 'group', x: 1430, y: 360,
+        body: '选择 / 趋势线 / 水平位 / 撤销\n趋势线类型\n自动校准\n磁吸\n锚点重设\n删除选中线\n清空本周期\n显示高周期趋势线',
+        tags: ['核心'] },
+
+      { id: 'manual', title: '人工判断', icon: '🧑‍🏫', cls: 'group', x: 1420, y: 760,
+        body: '置信度\n强烈做多 / 偏多 / 不交易 / 偏空 / 强烈做空\n保存这个判断',
+        tags: ['标签沉淀', '人工标注'] },
+
+      { id: 'case', title: '结构案例研究室', icon: '🏗️', cls: 'group', x: 1120, y: 980,
+        body: '锁定母结构\n选择买点研究区间\n理想买点区间\n低周期扫描\n候选卡 + 人工交易判断\n生成当前案例入场规则草案',
+        tags: ['核心', 'Structure Case'] },
+
+      { id: 'ladder', title: '买点形成阶梯', icon: '🪜', cls: 'group', x: 720, y: 1100,
+        body: 'L1 下跌衰竭\nL2 抬高低点（HL）\nL3 结构突破（BOS）\nL4 HL+BOS\nL5 重新收复+HL+BOS\n详情 / 时间轴 / 因子 / 理想区间',
+        tags: ['候选分析'] },
+
+      { id: 'deriv', title: '衍生品上下文', icon: '🔬', cls: 'group', x: 360, y: 930,
+        body: 'Funding\nOI\nBasis\nPositioning\n与主图十字光标联动\nK线与 Futures Metrics 协同观察',
+        tags: ['BTC特色', '建议保留'] },
+
+      { id: 'blind', title: 'Blind Replay / 策略开发室', icon: '🎯', cls: 'group', x: 170, y: 560,
+        body: '随机 Blind Replay\n换一个案例\n抓取当前快照\n显示未来\n市场阶段概率\n六周期因果快照\n你的决策\nVeto / 保存完整研究样本\nMFE / MAE / 相似案例',
+        tags: ['二级化候选'] },
+
+      { id: 'draft', title: '策略草稿台', icon: '🧪', cls: 'group', x: 290, y: 250,
+        body: '运行当前图形评分预览\n趋势/均线权重\n前高/前低突破权重\n成交量确认权重\n交易置信阈值',
+        tags: ['实验性', '可隐藏'] },
+
+      { id: 'system', title: '系统与仓库层能力', icon: '⚙️', cls: 'group', x: 820, y: 220,
+        body: 'Data Foundation V10\nBinance 公共行情数据接入\nSmoke Tests\nGitHub Actions 构建/部署\n.btcquantjob → VS Code → GitHub 自动化',
+        tags: ['基础设施'] },
+
+      { id: 'src', title: '代码模块映射', icon: '🧩', cls: 'group', x: 690, y: 20,
+        body: 'annotations.js\ndrawing_engine.js\ntrendline_calibration.js\ntrendline_research.js\nstructure_case_lab.js\nstructure_entry_lab.js\nresearch_ui.js\nstrategy.js\ndata_foundation_v10.js',
+        tags: ['src/'] }
+    ];
+
+    const links = [
+      ['root','nav'], ['root','chart'], ['root','drawing'], ['root','manual'],
+      ['root','case'], ['root','ladder'], ['root','deriv'], ['root','blind'],
+      ['root','draft'], ['root','system'], ['root','src'],
+      ['chart','drawing'], ['chart','manual'], ['case','ladder'], ['case','manual'],
+      ['blind','manual'], ['system','src']
+    ];
+
+    const viewport = document.getElementById('viewport');
+    const linksSvg = document.getElementById('links');
+    const canvas = document.getElementById('canvas');
+
+    let scale = 0.85;
+    let panX = -180;
+    let panY = -120;
+
+    function createNodeEl(node) {
+      const el = document.createElement('div');
+      el.className = `node ${node.cls || ''}`;
+      el.dataset.id = node.id;
+      el.innerHTML = `
+        <div class="head"><span class="icon">${node.icon || '•'}</span><span>${node.title}</span></div>
+        <div class="body">${node.body || ''}</div>
+        <div class="tags">${(node.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+      `;
+      viewport.appendChild(el);
+      node.el = el;
+      node.w = el.offsetWidth;
+      node.h = el.offsetHeight;
+      el.style.cursor = 'grab';
+      positionNode(node);
+      setupNodeDrag(node);
+    }
+
+    let framePending = false;
+
+    function scheduleRender() {
+      if (framePending) return;
+      framePending = true;
+      requestAnimationFrame(() => {
+        framePending = false;
+        renderLinks();
+      });
+    }
+
+    function positionNode(node) {
+      node.el.style.transform = `translate3d(${node.x}px, ${node.y}px, 0)`;
+    }
+
+    function renderLinks() {
+      linksSvg.setAttribute('width', 2600);
+      linksSvg.setAttribute('height', 1900);
+      links.forEach((pair, i) => {
+        const [aId, bId] = pair;
+        const a = nodes.find(n => n.id === aId);
+        const b = nodes.find(n => n.id === bId);
+        if (!a || !b || !a.el || !b.el) return;
+        const ax = a.x + a.w / 2;
+        const ay = a.y + a.h / 2;
+        const bx = b.x + b.w / 2;
+        const by = b.y + b.h / 2;
+        const line = linkEls[i];
+        line.setAttribute('x1', ax);
+        line.setAttribute('y1', ay);
+        line.setAttribute('x2', bx);
+        line.setAttribute('y2', by);
+      });
+    }
+
+    function applyTransform() {
+      viewport.style.transform = `translate3d(${panX}px, ${panY}px, 0) scale(${scale})`;
+      scheduleRender();
+    }
+
+    function setupNodeDrag(node) {
+      let dragging = false;
+      let startX = 0, startY = 0, origX = 0, origY = 0;
+
+      node.el.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        dragging = true;
+        node.el.setPointerCapture(e.pointerId);
+        startX = e.clientX;
+        startY = e.clientY;
+        origX = node.x;
+        origY = node.y;
+        node.el.style.zIndex = 50;
+        node.el.style.cursor = 'grabbing';
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+        e.stopPropagation();
+      });
+
+      node.el.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        node.x = origX + (e.clientX - startX) / scale;
+        node.y = origY + (e.clientY - startY) / scale;
+        positionNode(node);
+        scheduleRender();
+      });
+
+      const end = (e) => {
+        if (!dragging) return;
+        dragging = false;
+        node.el.style.zIndex = '';
+        node.el.style.cursor = 'grab';
+        document.body.style.userSelect = '';
+        try { node.el.releasePointerCapture(e.pointerId); } catch {}
+      };
+      node.el.addEventListener('pointerup', end);
+      node.el.addEventListener('pointercancel', end);
+    }
+
+    let panning = false;
+    let panStartX = 0, panStartY = 0, origPanX = 0, origPanY = 0;
+
+    canvas.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      if (e.target.closest('.node')) return;
+      panning = true;
+      canvas.setPointerCapture?.(e.pointerId);
+      canvas.classList.add('panning');
+      panStartX = e.clientX;
+      panStartY = e.clientY;
+      origPanX = panX;
+      origPanY = panY;
+      document.body.style.userSelect = 'none';
+      e.preventDefault();
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+      if (!panning) return;
+      panX = origPanX + (e.clientX - panStartX);
+      panY = origPanY + (e.clientY - panStartY);
+      viewport.style.transform = `translate3d(${panX}px, ${panY}px, 0) scale(${scale})`;
+    });
+
+    function stopPan(e){
+      if (!panning) return;
+      panning = false;
+      canvas.classList.remove('panning');
+      document.body.style.userSelect = '';
+      try { canvas.releasePointerCapture?.(e.pointerId); } catch {}
+    }
+    canvas.addEventListener('pointerup', stopPan);
+    canvas.addEventListener('pointercancel', stopPan);
+
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      const worldX = (mouseX - panX) / scale;
+      const worldY = (mouseY - panY) / scale;
+      const zoom = e.deltaY < 0 ? 1.08 : 0.92;
+      const newScale = Math.max(0.45, Math.min(1.8, scale * zoom));
+      panX = mouseX - worldX * newScale;
+      panY = mouseY - worldY * newScale;
+      scale = newScale;
+      viewport.style.transform = `translate3d(${panX}px, ${panY}px, 0) scale(${scale})`;
+    }, { passive: false });
+
+    function fitView() {
+      const xs = nodes.map(n => n.x);
+      const ys = nodes.map(n => n.y);
+      nodes.forEach(n => { n.w = n.el.offsetWidth; n.h = n.el.offsetHeight; });
+      const ws = nodes.map(n => n.w);
+      const hs = nodes.map(n => n.h);
+      const minX = Math.min(...xs);
+      const minY = Math.min(...ys);
+      const maxX = Math.max(...xs.map((x,i) => x + ws[i]));
+      const maxY = Math.max(...ys.map((y,i) => y + hs[i]));
+      const padding = 80;
+      const cw = window.innerWidth;
+      const ch = window.innerHeight;
+      const contentW = maxX - minX + padding * 2;
+      const contentH = maxY - minY + padding * 2;
+      scale = Math.min(cw / contentW, ch / contentH, 1);
+      panX = -minX * scale + (cw - (maxX - minX) * scale) / 2;
+      panY = -minY * scale + (ch - (maxY - minY) * scale) / 2 + 30;
+      applyTransform();
+    }
+
+    function layoutCompact() {
+      const positions = {
+        root:[860,520], nav:[250,170], chart:[1040,120], drawing:[1360,360], manual:[1360,730],
+        case:[1030,930], ladder:[640,1010], deriv:[260,850], blind:[120,520], draft:[250,310],
+        system:[720,160], src:[620,20]
+      };
+      nodes.forEach(n => { if (positions[n.id]) [n.x,n.y] = positions[n.id]; positionNode(n); });
+      fitView();
+    }
+
+    function layoutExpand() {
+      const positions = {
+        root:[900,560], nav:[120,80], chart:[1180,40], drawing:[1560,310], manual:[1560,850],
+        case:[1140,1080], ladder:[650,1220], deriv:[120,1020], blind:[40,530], draft:[160,260],
+        system:[760,160], src:[680,10]
+      };
+      nodes.forEach(n => { if (positions[n.id]) [n.x,n.y] = positions[n.id]; positionNode(n); });
+      fitView();
+    }
+
+    const linkEls = links.map(() => {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('class', 'link');
+      linksSvg.appendChild(line);
+      return line;
+    });
+
+    nodes.forEach(createNodeEl);
+    document.getElementById('fitBtn').addEventListener('click', fitView);
+    document.getElementById('compactBtn').addEventListener('click', layoutCompact);
+    document.getElementById('expandBtn').addEventListener('click', layoutExpand);
+
+    window.addEventListener('resize', renderLinks);
+    fitView();
+  </script>
+</body>
+</html>
