@@ -9,8 +9,8 @@
 
 **可视化界面：** [https://sunhshun811-collab.github.io/BTCUSDT_Price_Action_Lab/](https://sunhshun811-collab.github.io/BTCUSDT_Price_Action_Lab/)
 
-**功能树网络图：** [https://sunhshun811-collab.github.io/BTCUSDT_Price_Action_Lab/function-map.html](https://sunhshun811-collab.github.io/BTCUSDT_Price_Action_Lab/function-map.html)
----
+**功能树：** [https://sunhshun811-collab.github.io/BTCUSDT_Price_Action_Lab/function-map.html](https://sunhshun811-collab.github.io/BTCUSDT_Price_Action_Lab/function-map.html)
+
 
 ## 项目定位
 
@@ -211,5 +211,6 @@ tools/btcquant_launcher/
 ## 风险说明
 
 本项目用于研究、可视化和策略实验，不构成投资建议。任何交易决策都应自行评估风险。
+
 
 
