@@ -2,6 +2,9 @@
 __pycache__/
 
 # Generated/local artifacts only
+/research_logs/
+
+# Generated/local artifacts only
 node_modules/
 /dist/
 /research_logs/
