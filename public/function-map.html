@@ -191,6 +191,7 @@
     <button id="fitBtn">居中适配</button>
     <button id="expandBtn">展开布局</button>
     <button id="compactBtn">紧凑布局</button>
+    <button id="savePositionBtn">保存位置</button>
   </div>
 
   <div id="canvas">
@@ -478,97 +479,147 @@
     window.addEventListener('resize', renderLinks);
     fitView();
   </script>
+
 <!-- BTCQUANT_PERSISTENT_NODE_LAYOUT_START -->
 <script>
 (() => {
-  const STORAGE_KEY = 'btcquant-function-tree-node-layout-v1';
+  const STORAGE_KEY = 'btcquant-function-tree-node-layout-v2';
 
-  function getNodeId(el) {
-    return el?.dataset?.id || null;
-  }
-
-  function loadLayout() {
-    let saved = null;
+  function readSavedLayout() {
     try {
-      saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      return parsed && typeof parsed === 'object' ? parsed : null;
     } catch (_) {
-      saved = null;
+      return null;
     }
-    if (!saved || typeof saved !== 'object') return;
-
-    document.querySelectorAll('.node[data-id]').forEach((el) => {
-      const id = getNodeId(el);
-      const pos = saved[id];
-      if (!pos || !Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return;
-
-      el.style.left = `${pos.x}px`;
-      el.style.top = `${pos.y}px`;
-
-      try {
-        if (typeof nodes !== 'undefined' && Array.isArray(nodes)) {
-          const node = nodes.find((n) => n.id === id);
-          if (node) {
-            node.x = pos.x;
-            node.y = pos.y;
-          }
-        }
-      } catch (_) {}
-    });
-
-    try {
-      if (typeof renderLinks === 'function') renderLinks();
-    } catch (_) {}
   }
 
-  function saveLayout() {
+  function saveCurrentLayout() {
     const layout = {};
-    document.querySelectorAll('.node[data-id]').forEach((el) => {
-      const id = getNodeId(el);
-      if (!id) return;
 
-      const x = parseFloat(el.style.left);
-      const y = parseFloat(el.style.top);
-      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    try {
+      if (typeof nodes !== 'undefined' && Array.isArray(nodes)) {
+        nodes.forEach((node) => {
+          if (!node || !node.id) return;
 
-      layout[id] = { x, y };
-    });
+          let x = Number(node.x);
+          let y = Number(node.y);
+
+          if ((!Number.isFinite(x) || !Number.isFinite(y)) && node.el) {
+            x = parseFloat(node.el.style.left);
+            y = parseFloat(node.el.style.top);
+          }
+
+          if (Number.isFinite(x) && Number.isFinite(y)) {
+            layout[node.id] = { x, y };
+          }
+        });
+      }
+    } catch (_) {}
+
+    if (Object.keys(layout).length === 0) {
+      document.querySelectorAll('.node[data-id]').forEach((el) => {
+        const id = el.dataset.id;
+        const x = parseFloat(el.style.left);
+        const y = parseFloat(el.style.top);
+        if (id && Number.isFinite(x) && Number.isFinite(y)) {
+          layout[id] = { x, y };
+        }
+      });
+    }
 
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
+    } catch (err) {
+      alert('保存位置失败：浏览器无法写入本地存储。');
+      return;
+    }
+
+    const btn = document.getElementById('savePositionBtn');
+    if (btn) {
+      const original = btn.textContent;
+      btn.textContent = '已保存';
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.textContent = original || '保存位置';
+        btn.disabled = false;
+      }, 900);
+    }
+  }
+
+  function applySavedLayout() {
+    const saved = readSavedLayout();
+    if (!saved) return false;
+
+    let applied = false;
+
+    try {
+      if (typeof nodes !== 'undefined' && Array.isArray(nodes)) {
+        nodes.forEach((node) => {
+          const pos = saved[node.id];
+          if (!pos || !Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return;
+
+          node.x = pos.x;
+          node.y = pos.y;
+
+          if (node.el) {
+            node.el.style.left = `${pos.x}px`;
+            node.el.style.top = `${pos.y}px`;
+          }
+
+          applied = true;
+        });
+      }
     } catch (_) {}
+
+    if (!applied) {
+      document.querySelectorAll('.node[data-id]').forEach((el) => {
+        const pos = saved[el.dataset.id];
+        if (!pos || !Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return;
+        el.style.left = `${pos.x}px`;
+        el.style.top = `${pos.y}px`;
+        applied = true;
+      });
+    }
+
+    if (applied) {
+      try {
+        if (typeof renderLinks === 'function') renderLinks();
+      } catch (_) {}
+    }
+
+    return applied;
   }
 
-  let saveRaf = 0;
+  function initManualLayoutSave() {
+    const saveBtn = document.getElementById('savePositionBtn');
+    if (saveBtn && !saveBtn.dataset.bound) {
+      saveBtn.dataset.bound = '1';
+      saveBtn.addEventListener('click', saveCurrentLayout);
+    }
 
-  function scheduleSave() {
-    if (saveRaf) cancelAnimationFrame(saveRaf);
-    saveRaf = requestAnimationFrame(() => {
-      saveRaf = 0;
-      saveLayout();
+    // Initial page layout is created synchronously by the original page.
+    // Apply saved node coordinates afterwards and once again shortly after,
+    // so a refresh cannot overwrite the saved positions with fitView/default layout.
+    applySavedLayout();
+
+    requestAnimationFrame(() => {
+      applySavedLayout();
+      requestAnimationFrame(applySavedLayout);
     });
+
+    setTimeout(applySavedLayout, 120);
   }
 
-  // Original page builds its nodes synchronously; wait one frame so its initial
-  // layout / fitView finishes, then overwrite only node positions with saved ones.
-  requestAnimationFrame(() => {
-    loadLayout();
-
-    // Save whenever a dragged node is released.
-    document.addEventListener('pointerup', (event) => {
-      if (event.target && event.target.closest && event.target.closest('.node[data-id]')) {
-        scheduleSave();
-      }
-    }, true);
-
-    document.addEventListener('pointercancel', (event) => {
-      if (event.target && event.target.closest && event.target.closest('.node[data-id]')) {
-        scheduleSave();
-      }
-    }, true);
-  });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initManualLayoutSave, { once: true });
+  } else {
+    initManualLayoutSave();
+  }
 })();
 </script>
 <!-- BTCQUANT_PERSISTENT_NODE_LAYOUT_END -->
 </body>
 </html>
+
 
