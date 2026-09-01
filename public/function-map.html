@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -11,16 +11,15 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg)}
-#toolbar{
-  position:fixed;left:8px;right:8px;top:8px;height:38px;z-index:100;
+#toolbar{position:fixed;left:8px;right:8px;top:8px;height:44px;z-index:100;
   display:flex;align-items:center;gap:8px;padding:0 10px;border-radius:11px;
   background:var(--toolbar);color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.22)
 }
-#title{font-size:13px;font-weight:700;white-space:nowrap}
-#tip{font-size:10px;color:#d3d7e2;margin-right:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#title{font-size:15px;font-weight:700;white-space:nowrap}
+#tip{font-size:12px;color:#d3d7e2;margin-right:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .badge,.btn{
   height:24px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
-  background:#273760;color:#fff;font-size:10px;padding:0 9px;display:inline-flex;align-items:center
+  background:#273760;color:#fff;font-size:12px;padding:0 10px;display:inline-flex;align-items:center
 }
 .btn{cursor:pointer}
 .btn:hover{filter:brightness(1.1)}
@@ -39,25 +38,23 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:"Segoe UI"
   position:absolute;left:0;top:0;width:2400px;height:1700px;overflow:visible;pointer-events:none
 }
 .edge{stroke:var(--line);stroke-width:2;opacity:.86}
-.node{
-  position:absolute;width:176px;min-height:108px;
+.node{position:absolute;width:220px;min-height:128px;
   border-radius:13px;background:linear-gradient(180deg,var(--card2),var(--card));
   color:var(--text);box-shadow:0 8px 22px rgba(14,25,56,.25);
   border:1px solid rgba(255,255,255,.08);user-select:none;touch-action:none;
   will-change:left,top;cursor:grab
 }
 .node.dragging{cursor:grabbing;box-shadow:0 12px 28px rgba(14,25,56,.38)}
-.node.root{width:196px;background:linear-gradient(180deg,#1d2b59,#122044);border-color:rgba(135,166,255,.35)}
-.head{padding:10px 11px 7px;font-size:12px;font-weight:700;border-bottom:1px solid rgba(255,255,255,.08)}
-.body{padding:8px 11px 9px;color:var(--muted);font-size:10px;line-height:1.48;white-space:pre-line}
+.node.root{width:250px;background:linear-gradient(180deg,#1d2b59,#122044);border-color:rgba(135,166,255,.35)}
+.head{padding:12px 13px 9px;font-size:15px;font-weight:700;border-bottom:1px solid rgba(255,255,255,.08)}
+.body{padding:10px 13px 11px;color:var(--muted);font-size:13px;line-height:1.58;white-space:pre-line}
 .tags{padding:0 10px 9px;display:flex;flex-wrap:wrap;gap:5px}
-.tag{font-size:8px;color:#dce5ff;background:rgba(255,255,255,.08);border-radius:9px;padding:3px 6px}
-#legend{
-  position:fixed;right:8px;bottom:8px;width:210px;z-index:80;padding:10px 12px;
+.tag{font-size:10px;color:#dce5ff;background:rgba(255,255,255,.08);border-radius:9px;padding:3px 6px}
+#legend{position:fixed;right:8px;bottom:8px;width:260px;z-index:80;padding:10px 12px;
   border-radius:10px;background:#3b3f4b;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.2)
 }
-#legend b{font-size:11px}
-#legend ul{padding-left:16px;margin:7px 0 0;color:#e0e3ed;font-size:9px;line-height:1.55}
+#legend b{font-size:14px}
+#legend ul{padding-left:18px;margin:8px 0 0;color:#e0e3ed;font-size:12px;line-height:1.6}
 #toast{
   position:fixed;right:16px;top:54px;z-index:150;
   background:#216c48;color:#fff;border-radius:8px;padding:8px 12px;font-size:11px;
@@ -269,7 +266,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:"Segoe UI"
     const minY=Math.min(...nodes.map(n=>n.y));
     const maxX=Math.max(...nodes.map(n=>n.x+n.el.offsetWidth));
     const maxY=Math.max(...nodes.map(n=>n.y+n.el.offsetHeight));
-    const top=58, pad=60;
+    const top=66, pad=60;
     const cw=innerWidth, ch=innerHeight-top;
     scale=Math.min(1,(cw-pad*2)/(maxX-minX),(ch-pad*2)/(maxY-minY));
     panX=(cw-(maxX-minX)*scale)/2-minX*scale;
@@ -328,3 +325,4 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:"Segoe UI"
 </script>
 </body>
 </html>
+
