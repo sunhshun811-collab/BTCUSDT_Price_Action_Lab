@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
@@ -478,5 +478,97 @@
     window.addEventListener('resize', renderLinks);
     fitView();
   </script>
+<!-- BTCQUANT_PERSISTENT_NODE_LAYOUT_START -->
+<script>
+(() => {
+  const STORAGE_KEY = 'btcquant-function-tree-node-layout-v1';
+
+  function getNodeId(el) {
+    return el?.dataset?.id || null;
+  }
+
+  function loadLayout() {
+    let saved = null;
+    try {
+      saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    } catch (_) {
+      saved = null;
+    }
+    if (!saved || typeof saved !== 'object') return;
+
+    document.querySelectorAll('.node[data-id]').forEach((el) => {
+      const id = getNodeId(el);
+      const pos = saved[id];
+      if (!pos || !Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return;
+
+      el.style.left = `${pos.x}px`;
+      el.style.top = `${pos.y}px`;
+
+      try {
+        if (typeof nodes !== 'undefined' && Array.isArray(nodes)) {
+          const node = nodes.find((n) => n.id === id);
+          if (node) {
+            node.x = pos.x;
+            node.y = pos.y;
+          }
+        }
+      } catch (_) {}
+    });
+
+    try {
+      if (typeof renderLinks === 'function') renderLinks();
+    } catch (_) {}
+  }
+
+  function saveLayout() {
+    const layout = {};
+    document.querySelectorAll('.node[data-id]').forEach((el) => {
+      const id = getNodeId(el);
+      if (!id) return;
+
+      const x = parseFloat(el.style.left);
+      const y = parseFloat(el.style.top);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+
+      layout[id] = { x, y };
+    });
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
+    } catch (_) {}
+  }
+
+  let saveRaf = 0;
+
+  function scheduleSave() {
+    if (saveRaf) cancelAnimationFrame(saveRaf);
+    saveRaf = requestAnimationFrame(() => {
+      saveRaf = 0;
+      saveLayout();
+    });
+  }
+
+  // Original page builds its nodes synchronously; wait one frame so its initial
+  // layout / fitView finishes, then overwrite only node positions with saved ones.
+  requestAnimationFrame(() => {
+    loadLayout();
+
+    // Save whenever a dragged node is released.
+    document.addEventListener('pointerup', (event) => {
+      if (event.target && event.target.closest && event.target.closest('.node[data-id]')) {
+        scheduleSave();
+      }
+    }, true);
+
+    document.addEventListener('pointercancel', (event) => {
+      if (event.target && event.target.closest && event.target.closest('.node[data-id]')) {
+        scheduleSave();
+      }
+    }, true);
+  });
+})();
+</script>
+<!-- BTCQUANT_PERSISTENT_NODE_LAYOUT_END -->
 </body>
 </html>
+
