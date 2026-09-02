@@ -8,7 +8,7 @@ import {setContextData,renderContextAt} from './context.js';
 import {getDrawings,addDrawing,updateDrawing,removeDrawing,drawingsFor,drawingsForView,undoDrawing,redoDrawing,clearDrawings,duplicateDrawing,downloadJson} from './annotations.js';
 import {analyzeTrendline} from './trendline_research.js';
 import {createTrendDrawingEngine} from './drawing_engine.js';
-import {resolveTrendStyle} from './drawing_style.js';
+import {resolveTrendStyle,resolveHorizontalStyle,newHorizontalStyle} from './drawing_style.js';
 import {initResearchUI,researchDataChanged} from './research_ui.js';
 import {initStructureCaseLab} from './structure_case_lab.js';
 
