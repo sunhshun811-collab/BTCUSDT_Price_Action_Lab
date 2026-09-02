@@ -1,4 +1,4 @@
-﻿
+
 import './style.css';
 import {installModuleLayout} from './module_layout.js';
 import {createChart,CandlestickSeries,HistogramSeries,LineSeries,createSeriesMarkers,CrosshairMode} from 'lightweight-charts';
@@ -8,6 +8,7 @@ import {setContextData,renderContextAt} from './context.js';
 import {getDrawings,addDrawing,updateDrawing,removeDrawing,drawingsFor,drawingsForView,undoDrawing,clearDrawings,downloadJson} from './annotations.js';
 import {analyzeTrendline} from './trendline_research.js';
 import {createTrendDrawingEngine} from './drawing_engine.js';
+import {resolveTrendStyle} from './drawing_style.js';
 import {initResearchUI,researchDataChanged} from './research_ui.js';
 import {initStructureCaseLab} from './structure_case_lab.js';
 
@@ -150,13 +151,13 @@ function setTool(name){
 }
 async function selectDrawing(id){
   selectedDrawingId=id;renderDrawings();const d=getDrawings().find(x=>x.id===id);if(structureEntryLab)structureEntryLab.refresh();
-  const editable=!!d&&d.type==='trend'&&d.timeframe===currentTF;
+  const editable=!!d&&d.type==='trend';
   $('#resetAnchorA').disabled=!editable;$('#resetAnchorB').disabled=!editable;$('#deleteSelected').disabled=!d;
   if(!d){$('#drawingInfo').textContent='未选择图形。';return}
   if(d.type==='trend'){
-    $('#drawingInfo').innerHTML=`已选趋势线 · 母周期 ${TF_LABEL[d.timeframe]}<br>A ${fmtBJ(d.a.time)} @ ${num(d.a.price)}<br>B ${fmtBJ(d.b.time)} @ ${num(d.b.price)}<br>可直接锁入 Structure Case。`;
+    $('#drawingInfo').innerHTML=`已选趋势线 · 全周期同一结构对象<br>A ${fmtBJ(d.a.time)} @ ${num(d.a.price)}<br>B ${fmtBJ(d.b.time)} @ ${num(d.b.price)}<br>颜色 / 线宽 / 线型 / 几何在所有周期保持一致。`;
   }else if(d.type==='horizontal'){
-    $('#drawingInfo').innerHTML=`已选水平线 · 母周期 ${TF_LABEL[d.timeframe]} · ${num(d.price)}<br>可直接锁入 Structure Case。`;
+    $('#drawingInfo').innerHTML=`已选水平位 · 跨周期共享 · ${num(d.price)}<br>可直接锁入 Structure Case。`;
   }
 }
 function nearestDrawing(point,time){
@@ -187,20 +188,36 @@ function handleClick(p){
   if(tool==='horizontal'){const d={id:crypto.randomUUID(),type:'horizontal',timeframe:currentTF,price:snapped.price,createdAt:new Date().toISOString()};addDrawing(d);setTool('select');selectDrawing(d.id)}
 }
 function renderDrawings(){
-  lineSeries.forEach(x=>chart.removeSeries(x.series));lineSeries=[];priceLines.forEach(p=>candle.removePriceLine(p));priceLines=[];
-  for(const d of drawingsForView(currentTF,$('#showHigherTfTrendlines')?.checked!==false)){
+  lineSeries.forEach(x=>chart.removeSeries(x.series));lineSeries=[];
+  priceLines.forEach(p=>candle.removePriceLine(p));priceLines=[];
+  const showCross=$('#showHigherTfTrendlines')?.checked!==false;
+  for(const d of drawingsForView(currentTF,showCross)){
     if(d.type==='horizontal'){
-      priceLines.push(candle.createPriceLine({price:d.price,color:d.id===selectedDrawingId?'#9ed2ff':'#e7bf55',lineWidth:d.id===selectedDrawingId?2:1,lineStyle:2,axisLabelVisible:true,title:'关键位'}));
+      priceLines.push(candle.createPriceLine({
+        price:d.price,
+        color:d.id===selectedDrawingId?'#9ed2ff':'#e7bf55',
+        lineWidth:d.id===selectedDrawingId?2:1,
+        lineStyle:2,axisLabelVisible:true,title:'关键位'
+      }));
     }else if(d.type==='trend'){
-      const projected=d.timeframe!==currentTF;
-      const s=chart.addSeries(LineSeries,{color:d.id===selectedDrawingId?'#9ed2ff':projected?'#6f8da8':'#55a7ff',lineWidth:d.id===selectedDrawingId?3:projected?1:2,lineStyle:projected?2:0,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
+      const style=resolveTrendStyle(d);
+      const s=chart.addSeries(LineSeries,{
+        color:style.color,
+        lineWidth:style.lineWidth,
+        lineStyle:style.lineStyle,
+        priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false
+      });
       s.setData(linePoints(d.a,d.b,d.mode||'ray'));
-      if(d.id===selectedDrawingId)createSeriesMarkers(s,[{time:d.a.time,position:'inBar',shape:'circle',color:'#ffffff',text:'A'},{time:d.b.time,position:'inBar',shape:'circle',color:'#ffffff',text:'B'}].sort((a,b)=>a.time-b.time));
+      if(d.id===selectedDrawingId){
+        createSeriesMarkers(s,[
+          {time:d.a.time,position:'inBar',shape:'circle',color:'#ffffff',text:'A'},
+          {time:d.b.time,position:'inBar',shape:'circle',color:'#ffffff',text:'B'}
+        ].sort((a,b)=>a.time-b.time));
+      }
       lineSeries.push({id:d.id,series:s});
     }
   }
 }
-
 
 function renderCalibrationState(s){
   const panel=$('#trendCalibrationPanel'),summary=$('#calibrationSummary');
@@ -359,7 +376,7 @@ async function init(){
     }
   });
   $('#timeframe').onchange=async()=>{
-    currentTF=$('#timeframe').value;selectedDrawingId=null;
+    currentTF=$('#timeframe').value;
     await loadGlobalRange();
   };
   $('#applyCustomRange').onclick=async()=>{

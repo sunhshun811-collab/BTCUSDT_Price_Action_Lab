@@ -1,4 +1,4 @@
-﻿
+
 const DRAW_KEY='priceActionLab.drawings.v1';
 const TF_RANK={'8h':0,'4h':1,'1h':2,'15m':3,'5m':4,'1m':5};
 
@@ -12,14 +12,14 @@ export function updateDrawing(id,patch){
 }
 export function removeDrawing(id){const v=getDrawings().filter(x=>x.id!==id);setDrawings(v);return v}
 export function drawingsFor(tf){return getDrawings().filter(x=>x.timeframe===tf)}
-export function drawingsForView(tf,includeHigher=true){
-  const rank=TF_RANK[tf]??99;
+export function drawingsForView(tf,includeCrossTimeframe=true){
   return getDrawings().filter(x=>{
     if(x.timeframe===tf)return true;
-    if(!includeHigher || !['trend','horizontal'].includes(x.type))return false;
-    return (TF_RANK[x.timeframe]??99)<rank;
+    if(!includeCrossTimeframe)return false;
+    return ['trend','horizontal'].includes(x.type);
   });
 }
+
 export function confirmedResearchTrendlines(tf=null,causalOnly=false,decisionTime=null){
   return getDrawings().filter(x=>{
     if(x.type!=='trend'||!x.researchConfirmed)return false;

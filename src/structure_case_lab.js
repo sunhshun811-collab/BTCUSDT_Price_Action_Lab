@@ -3,6 +3,7 @@ import {createChart,CandlestickSeries,LineSeries,createSeriesMarkers,CrosshairMo
 import {toCandleRows} from './data.js';
 import {loadMonthsSmart as loadMonths,loadContextsSmart as loadContexts,saveStructureCaseResearch,listStructureCases,listStructureCaseVersions,getStructureCaseVersion,migrateLegacyStructureCaseResearch} from './data_foundation_v10.js';
 import {getDrawings} from './annotations.js';
+import {resolveTrendStyle} from './drawing_style.js';
 import {TF_SECONDS,linePrice,explainCase,explainIdealZone,classifyByIdealZone,buildCaseDraft} from './case_entry_research.js';
 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -207,7 +208,7 @@ export function initStructureCaseLab(api){
     const sc=ensureCase(d.timeframe);
     sc.structureScope='cross_timeframe';
     if(d.type==='trend'){
-      sc.trendline={id:d.id,sourceTf:d.timeframe,type:'trend',a:clone(d.a),b:clone(d.b),mode:d.mode||'ray',role:d.role||'auto',zoneAtr:Number(d.zoneAtr??.25),calibration:clone(d.calibration||null)};
+      sc.trendline={id:d.id,sourceTf:d.timeframe,type:'trend',a:clone(d.a),b:clone(d.b),mode:d.mode||'ray',style:resolveTrendStyle(d),role:d.role||'auto',zoneAtr:Number(d.zoneAtr??.25),calibration:clone(d.calibration||null)};
     }else if(d.type==='horizontal'){
       sc.horizontal={id:d.id,sourceTf:d.timeframe,type:'horizontal',price:Number(d.price)};
     }else return;
@@ -300,9 +301,22 @@ export function initStructureCaseLab(api){
     setTimeout(paint,50);chart.timeScale().subscribeVisibleTimeRangeChange(paint);
   }
   function projectedTrendData(line,from,to){
-    const a=Math.max(from,Math.min(Number(line.a.time),to)),b=to;
-    return [{time:a,value:linePrice(line,a)},{time:b,value:linePrice(line,b)}].filter(x=>Number.isFinite(x.value));
+    if(!line?.a||!line?.b||Number(line.a.time)===Number(line.b.time))return[];
+    let A=line.a,B=line.b;if(Number(A.time)>Number(B.time))[A,B]=[B,A];
+    const mode=line.mode||'ray';
+    let start=Number(from),end=Number(to);
+    if(mode==='segment'){
+      start=Math.max(start,Number(A.time));end=Math.min(end,Number(B.time));
+    }else if(mode==='ray'){
+      start=Math.max(start,Number(A.time));
+    }
+    if(start>=end)return[];
+    return [
+      {time:start,value:linePrice(line,start)},
+      {time:end,value:linePrice(line,end)}
+    ].filter(x=>Number.isFinite(x.value));
   }
+
   function miniMarkers(tf){
     if(!c)return[];const fb=getFeedback(),sec=TF_SECONDS[tf],groups=new Map();
     for(const x of c.candidates||[]){const t=Math.floor((Number(x.decisionTime)-1)/sec)*sec;if(!groups.has(t))groups.set(t,[]);groups.get(t).push(x)}
@@ -321,7 +335,8 @@ export function initStructureCaseLab(api){
     const ch=createChart(host.querySelector('.caseMiniChart'),miniOptions()),s=ch.addSeries(CandlestickSeries,candleOptions());
     s.setData(toCandleRows(rows));
     s.createPriceLine({price:Number(c.horizontal.price),color:'#e7bf55',lineWidth:1,lineStyle:2,axisLabelVisible:true,title:'结构水平位'});
-    const tl=ch.addSeries(LineSeries,{color:'#55a7ff',lineWidth:2,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
+    const trendStyle=resolveTrendStyle(c.trendline);
+    const tl=ch.addSeries(LineSeries,{color:trendStyle.color,lineWidth:trendStyle.lineWidth,lineStyle:trendStyle.lineStyle,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
     tl.setData(projectedTrendData(c.trendline,rows[0]?.[0]??c.zone.start,rows.at(-1)?.[0]??c.zone.end));
     createSeriesMarkers(s,miniMarkers(tf));
     const pad=Math.max(6*TF_SECONDS[tf],(c.zone.end-c.zone.start)*.12);ch.timeScale().setVisibleRange({from:c.zone.start-pad,to:c.zone.end+pad});

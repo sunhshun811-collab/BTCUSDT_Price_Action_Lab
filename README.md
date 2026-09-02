@@ -47,7 +47,7 @@ BTCUSDT Price Action Lab 是一个围绕 BTCUSDT 永续合约构建的 Price Act
 - **M01 — 主图与市场定位**：K 线、周期、日期范围、成交量、十字光标与 OHLC。
 - **M02 — 图形标注与趋势线**：趋势线、水平位、磁吸、自动校准、锚点管理与趋势线研究。
 - **M03 — 人工判断**：方向、置信度、备注、历史标签管理与标签 JSON 导出。
-- **M04 — Structure Case 条件化买点研究**：趋势线 / 水平位跨周期共享，绘制周期只作为来源元数据；任意周期均可锁定并投影到其他周期：内置 Case Research Ledger，使用 IndexedDB 自动保存案例、人工判断、扫描版本与历史恢复：母结构、Entry Zone、低周期扫描、候选判断、买点阶梯与当前案例规则草案。
+- **M04 — Structure Case 条件化买点研究**：同一趋势线在所有周期保持完全相同的锚点、几何、模式、颜色、线宽和线型；周期只改变 K 线观察分辨率：趋势线 / 水平位跨周期共享，绘制周期只作为来源元数据；任意周期均可锁定并投影到其他周期：内置 Case Research Ledger，使用 IndexedDB 自动保存案例、人工判断、扫描版本与历史恢复：母结构、Entry Zone、低周期扫描、候选判断、买点阶梯与当前案例规则草案。
 - **M05 — 永续衍生品上下文**：Funding、OI、Basis、Positioning、主动买卖与主图联动。
 - **M06 — Blind Replay 盲测研究**：冻结未来、六周期因果快照、决策、Veto、Feature Snapshot、MFE / MAE 与相似案例。
 

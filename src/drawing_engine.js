@@ -1,6 +1,7 @@
 
 import {LineSeries,createSeriesMarkers} from 'lightweight-charts';
 import {calibrateTrendline} from './trendline_calibration.js';
+import {newTrendStyle} from './drawing_style.js';
 
 export function createTrendDrawingEngine(api){
   let active=false,drawing=false,rawA=null,rawB=null,state=null,preview=null,previewMarkers=null;
@@ -89,7 +90,7 @@ export function createTrendDrawingEngine(api){
     const drawingObj={
       id:crypto.randomUUID(),type:'trend',timeframe:api.timeframe(),
       a:{...c.a},b:{...c.b},rawA:{...state.rawA},rawB:{...state.rawB},
-      mode:api.trendMode(),role:c.role||'auto',zoneAtr:.25,
+      mode:api.trendMode(),role:c.role||'auto',zoneAtr:.25,style:newTrendStyle(),
       calibration:{
         method:state.mode,anchorType:c.anchorType,score:c.score,confidence:c.confidence,
         rank:state.index+1,candidateCount:state.candidates.length,
