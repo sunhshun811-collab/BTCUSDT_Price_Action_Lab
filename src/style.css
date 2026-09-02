@@ -219,3 +219,89 @@ button,input,select,textarea{font-size:13px}
   .judgeGrid,.detailGrid{grid-template-columns:1fr}
 }
 
+/* MODULE_WORKSPACE_V2_START */
+.moduleWorkspaceV2{
+  --m01:#4d95ff;--m02:#54b7ff;--m03:#9675ff;--m04:#36c4b5;--m05:#46a2ff;
+  --m06:#e7bf55;--m07:#4da8ff;--m08:#a16cff;
+}
+.moduleWorkspaceV2 .topbar{height:76px}
+.moduleWorkspaceV2 .brand{font-size:22px}
+.moduleWorkspaceV2 .badges{align-items:center}
+.foundationBadge{border-color:#24a9b8!important;background:#0b2a35!important;color:#8fe8ef!important}
+.foundationBadge b{display:inline-block;margin-right:5px;color:white}
+.moduleWorkspaceV2 .modebar{top:76px;height:48px;padding:0 18px;gap:7px}
+.moduleWorkspaceV2 .mode{font-size:11px;border:1px solid transparent}
+.moduleWorkspaceV2 .mode.active{border-color:#315372;background:#15293c}
+.moduleRail{
+  position:sticky;top:124px;z-index:8;min-height:52px;padding:7px 14px;
+  display:flex;align-items:center;gap:6px;overflow-x:auto;
+  background:rgba(7,16,26,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(8px)
+}
+.moduleRailLabel{font-size:10px;color:#70889f;margin-right:3px;flex:none}
+.moduleJump{
+  flex:none;display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:8px;
+  border:1px solid #233c53;background:#0c1926;color:#b7c9da;font-size:9px
+}
+.moduleJump b{font-size:10px;color:#fff}
+.moduleJump:hover,.moduleJump.active{border-color:#4d95ff;background:#173453;color:white}
+.moduleWorkspaceV2 main{padding:14px}
+.moduleWorkspaceV2 .workspace{grid-template-columns:320px minmax(0,1fr);gap:14px;align-items:start}
+.moduleWorkspaceV2 .leftPanel{
+  padding:0;background:transparent;border:0;box-shadow:none;display:flex;flex-direction:column;gap:10px;
+  max-height:calc(100vh - 196px);top:188px
+}
+.moduleSideCard{
+  background:linear-gradient(180deg,rgba(16,29,43,.98),rgba(9,19,29,.98));
+  border:1px solid var(--line);border-radius:12px;padding:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.16);scroll-margin-top:190px
+}
+.moduleSideCard.module-m01{border-left:3px solid var(--m01)}
+.moduleSideCard.module-m02{border-left:3px solid var(--m02)}
+.moduleSideCard.module-m03{border-left:3px solid var(--m03)}
+.moduleCardHeader{
+  position:relative;display:flex;align-items:flex-start;gap:9px;margin:-2px 0 11px;padding-bottom:9px;
+  border-bottom:1px solid #20374c
+}
+.moduleCode,.moduleInlineBadge{
+  display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:24px;padding:0 7px;
+  border-radius:7px;background:#18344f;border:1px solid #3d6b94;color:#eaf5ff;font-size:11px;font-weight:850;letter-spacing:.3px
+}
+.moduleCardText{display:flex;flex-direction:column;gap:3px;min-width:0}
+.moduleCardText strong{font-size:13px;color:#f2f7fc}
+.moduleCardText span{font-size:9px;color:#8fa5ba;line-height:1.45}
+.moduleWorkspaceV2 .moduleSideCard label{font-size:11px}
+.moduleWorkspaceV2 .moduleSideCard .toolTitle{font-size:10px;color:#8ea2b7}
+.moduleWorkspaceV2 .moduleSideCard .tool,
+.moduleWorkspaceV2 .moduleSideCard .labelGrid button{font-size:10px}
+.moduleWorkspaceV2 .moduleSideCard .infoBox{font-size:10px}
+.modulePrimaryHeader{
+  border-left:3px solid var(--m01)!important;display:grid!important;
+  grid-template-columns:auto minmax(0,1fr) auto;gap:10px
+}
+.modulePrimaryHeader .moduleInlineBadge{background:#153b67;border-color:var(--m01)}
+.modulePanel{
+  position:relative;scroll-margin-top:190px;margin-top:12px!important;padding:14px!important
+}
+.modulePanel.module-m06{border-left:3px solid var(--m06)}
+.modulePanel.module-m07{border-left:3px solid var(--m07)}
+.modulePanel.module-m08{border-left:3px solid var(--m08)}
+.modulePanel.module-m05{border-left:3px solid var(--m05)}
+.modulePanel.module-m06>.moduleCardHeader .moduleCode{background:#4a3c14;border-color:#a98528}
+.modulePanel.module-m08>.moduleCardHeader .moduleCode{background:#38265a;border-color:#7653a8}
+.moduleWorkspaceV2 .overviewHeader,
+.moduleWorkspaceV2 .labelsPanel{scroll-margin-top:190px}
+.moduleWorkspaceV2 .overviewHeader{border-left:3px solid var(--m04)}
+.moduleWorkspaceV2 .overviewHeader .moduleInlineBadge{margin-right:8px;background:#153b39;border-color:var(--m04)}
+.moduleWorkspaceV2 .labelsPanel{border-left:3px solid var(--m05)}
+.moduleWorkspaceV2 .sectionHead h3{font-size:13px}
+.moduleWorkspaceV2 .sectionHead span{font-size:10px}
+@media(max-width:1200px){
+  .moduleWorkspaceV2 .workspace{grid-template-columns:1fr}
+  .moduleWorkspaceV2 .leftPanel{position:static;max-height:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:850px){
+  .moduleWorkspaceV2 .leftPanel{display:flex}
+  .moduleJump span{display:none}
+}
+/* MODULE_WORKSPACE_V2_END */
+

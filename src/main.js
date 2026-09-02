@@ -1,5 +1,6 @@
 ﻿
 import './style.css';
+import {installModuleLayout} from './module_layout.js';
 import {createChart,CandlestickSeries,HistogramSeries,LineSeries,createSeriesMarkers,CrosshairMode} from 'lightweight-charts';
 import {toCandleRows,toVolumeRows} from './data.js';
 import {loadIndexSmart as loadIndex,loadMonthsSmart as loadMonths,loadContextsSmart as loadContexts,foundationStatus} from './data_foundation_v10.js';
@@ -344,6 +345,7 @@ function renderLabelsTable(){
   $('#labelStats').textContent=`累计 ${v.length} 个判断标签。`;$('#labelsTable').innerHTML='<thead><tr><th>北京时间</th><th>周期</th><th>判断</th><th>置信度</th><th>价格</th><th>备注</th></tr></thead><tbody>'+v.map(x=>`<tr><td>${x.beijing_time}</td><td>${TF_LABEL[x.timeframe]}</td><td>${map[x.label]}</td><td>${x.confidence}</td><td>${num(x.price)}</td><td>${x.note||''}</td></tr>`).join('')+'</tbody>'
 }
 async function init(){
+  installModuleLayout();
   indexData=await loadIndex();initGlobalRange();
 
   drawingEngine=createTrendDrawingEngine({
@@ -423,4 +425,5 @@ async function init(){
   await loadGlobalRange();renderLabelsTable();
 }
 init().catch(e=>{document.body.innerHTML=`<pre style="color:white;padding:20px">启动失败：${e.stack||e}</pre>`});
+
 
