@@ -1,4 +1,3 @@
-
 import {LineSeries,createSeriesMarkers} from 'lightweight-charts';
 import {calibrateTrendline} from './trendline_calibration.js';
 import {newTrendStyle} from './drawing_style.js';
@@ -12,7 +11,8 @@ export function createTrendDrawingEngine(api){
     const rect=container.getBoundingClientRect(),x=ev.clientX-rect.left,y=ev.clientY-rect.top;
     const time=chart.timeScale().coordinateToTime(x),price=candle.coordinateToPrice(y);
     if(time==null||price==null||!Number.isFinite(Number(price)))return null;
-    return {time:Number(time),price:Number(price)};
+    const raw={time:Number(time),price:Number(price)};
+    return api.snapPoint?.(raw.time,raw.price,y,{invert:!!ev.ctrlKey})||raw;
   }
   function removePreview(){
     const chart=api.chart();
@@ -21,9 +21,7 @@ export function createTrendDrawingEngine(api){
   }
   function ensurePreview(){
     const chart=api.chart();if(!chart)return null;
-    if(!preview){
-      preview=chart.addSeries(LineSeries,{color:'#9ed2ff',lineWidth:2,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
-    }
+    if(!preview)preview=chart.addSeries(LineSeries,{color:'#9ed2ff',lineWidth:2,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
     return preview;
   }
   function renderLine(a,b,candidate=false){
@@ -37,25 +35,34 @@ export function createTrendDrawingEngine(api){
       {time:B.time,position:'inBar',shape:'circle',color:candidate?'#ffd166':'#ffffff',text:'B'}
     ]);
   }
-  function publish(kind,extra={}){
-    state={kind,rawA,rawB,...extra};api.onState?.(state);
-  }
-  function stopEvent(ev){
-    ev.preventDefault();ev.stopPropagation();
-    if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();
-  }
+  function publish(kind,extra={}){state={kind,rawA,rawB,...extra};api.onState?.(state)}
+  function stopEvent(ev){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation?.()}
   function onDown(ev){
     if(!active||ev.button!==0)return;
     const p=pointFromEvent(ev);if(!p)return;
     stopEvent(ev);drawing=true;rawA=p;rawB=p;state=null;
     try{container.setPointerCapture(ev.pointerId)}catch{}
-    renderLine(rawA,rawB,false);publish('drawing',{message:'已锁定粗略起点 A，拖到大概的第二个位置后松开。'});
+    renderLine(rawA,rawB,false);publish('drawing',{message:'已确定起点，拖到第二个位置后松开即可完成趋势线。'});
   }
   function onMove(ev){
     if(!active||!drawing)return;
     const p=pointFromEvent(ev);if(!p)return;
     stopEvent(ev);rawB=p;renderLine(rawA,rawB,false);
-    publish('drawing',{message:'无需点准真实高低点；松开鼠标后自动识别结构锚点。'});
+    publish('drawing',{message:'松开鼠标立即成线；智能校准只作为可选建议，不会阻挡画线。'});
+  }
+  function makeRawDrawing(){
+    const replay=api.replayState?.()||{};
+    const causal=!!(replay.active&&!replay.futureRevealed);
+    return {
+      id:crypto.randomUUID(),type:'trend',
+      timeframe:api.timeframe(),drawnOnTimeframe:api.timeframe(),
+      a:{...rawA},b:{...rawB},rawA:{...rawA},rawB:{...rawB},
+      mode:api.trendMode(),style:newTrendStyle(),locked:false,visible:true,
+      role:'auto',zoneAtr:.25,geometryRevision:1,styleRevision:1,
+      calibration:{method:'manual',anchorType:'手绘',score:null,confidence:null,rank:0,candidateCount:0},
+      researchConfirmed:false,causalEligible:causal,validFrom:causal?replay.decisionTime:null,
+      origin:causal?'blind_replay_manual':'manual',createdAt:new Date().toISOString()
+    };
   }
   function onUp(ev){
     if(!active||!drawing)return;
@@ -63,61 +70,57 @@ export function createTrendDrawingEngine(api){
     stopEvent(ev);drawing=false;
     try{container.releasePointerCapture(ev.pointerId)}catch{}
     if(!rawA||!rawB||rawA.time===rawB.time){cancel();return}
-    const result=calibrateTrendline(rawA,rawB,api.rows(),api.timeframe(),api.calibrationMode());
-    state={kind:'candidate',...result,index:result.recommended||0};
-    renderCandidate();api.onState?.(state);
+    const drawingObj=makeRawDrawing();
+    removePreview();
+    api.onCommit?.(drawingObj);
+    if(api.calibrationMode?.()==='free'){state=null;rawA=null;rawB=null;api.onState?.({kind:'idle'});return}
+    try{
+      const result=calibrateTrendline(rawA,rawB,api.rows(),api.timeframe(),api.calibrationMode());
+      if(result?.candidates?.length){
+        state={kind:'suggestion',drawingId:drawingObj.id,...result,index:result.recommended||0,rawA:{...rawA},rawB:{...rawB}};
+        renderCandidate();api.onState?.(state);
+      }else{state=null;api.onState?.({kind:'idle'})}
+    }catch{state=null;api.onState?.({kind:'idle'})}
+    rawA=null;rawB=null;
   }
   function renderCandidate(){
-    if(!state||state.kind!=='candidate')return;
-    const c=state.candidates[state.index]||state.candidates[0];
-    renderLine(c.a,c.b,true);
+    if(!state||state.kind!=='suggestion')return;
+    const c=state.candidates[state.index]||state.candidates[0];renderLine(c.a,c.b,true);
   }
   function nextCandidate(){
-    if(!state||state.kind!=='candidate')return;
+    if(!state||state.kind!=='suggestion'||!state.candidates?.length)return;
     state.index=(state.index+1)%state.candidates.length;renderCandidate();api.onState?.(state);
   }
   function useRaw(){
-    if(!state||state.kind!=='candidate')return;
-    const raw={a:{...state.rawA},b:{...state.rawB},anchorType:'自由',role:'auto',score:1,confidence:1,rank:0};
-    state={...state,candidates:[raw,...state.candidates],index:0,mode:'free_override'};
-    renderCandidate();api.onState?.(state);
+    if(!state||state.kind!=='suggestion')return;
+    removePreview();state=null;api.onState?.({kind:'idle'});
   }
   function accept(){
-    if(!state||state.kind!=='candidate')return null;
+    if(!state||state.kind!=='suggestion')return null;
     const c=state.candidates[state.index];if(!c)return null;
-    const replay=api.replayState();
-    const causal=!!(replay.active&&!replay.futureRevealed);
-    const drawingObj={
-      id:crypto.randomUUID(),type:'trend',timeframe:api.timeframe(),
-      a:{...c.a},b:{...c.b},rawA:{...state.rawA},rawB:{...state.rawB},
-      mode:api.trendMode(),role:c.role||'auto',zoneAtr:.25,style:newTrendStyle(),
+    const patch={
+      a:{...c.a},b:{...c.b},
       calibration:{
         method:state.mode,anchorType:c.anchorType,score:c.score,confidence:c.confidence,
         rank:state.index+1,candidateCount:state.candidates.length,
         endpointFit:c.endpointFit??null,geometryFit:c.geometryFit??null,
         touchScore:c.touchScore??null,penetration:c.penetration??null
       },
-      researchConfirmed:false,causalEligible:causal,
-      validFrom:causal?replay.decisionTime:null,
-      origin:causal?'blind_replay_auto_calibrated':'manual_auto_calibrated',
-      createdAt:new Date().toISOString()
+      origin:'manual_with_smart_calibration'
     };
-    removePreview();state=null;rawA=null;rawB=null;api.onCommit?.(drawingObj);
-    return drawingObj;
+    api.onApplySuggestion?.(state.drawingId,patch);
+    const id=state.drawingId;removePreview();state=null;api.onState?.({kind:'idle'});return id;
   }
   function cancel(){
     drawing=false;rawA=null;rawB=null;state=null;removePreview();api.onState?.({kind:'idle'});
   }
   function setActive(v){
     active=!!v;container.classList.toggle('trendDrawActive',active);
-    if(!active)cancel();
+    if(!active&&drawing)cancel();
   }
-
-  // Capture phase: this prevents Lightweight Charts from stealing the second anchor.
   container.addEventListener('pointerdown',onDown,true);
   window.addEventListener('pointermove',onMove,true);
   window.addEventListener('pointerup',onUp,true);
   window.addEventListener('pointercancel',onUp,true);
-
   return {setActive,cancel,nextCandidate,useRaw,accept,getState:()=>state,isActive:()=>active};
 }

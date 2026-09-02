@@ -5,7 +5,7 @@ import {createChart,CandlestickSeries,HistogramSeries,LineSeries,createSeriesMar
 import {toCandleRows,toVolumeRows} from './data.js';
 import {loadIndexSmart as loadIndex,loadMonthsSmart as loadMonths,loadContextsSmart as loadContexts,foundationStatus,getHumanLabels,addHumanLabel,updateHumanLabel,removeHumanLabel} from './data_foundation_v10.js';
 import {setContextData,renderContextAt} from './context.js';
-import {getDrawings,addDrawing,updateDrawing,removeDrawing,drawingsFor,drawingsForView,undoDrawing,clearDrawings,downloadJson} from './annotations.js';
+import {getDrawings,addDrawing,updateDrawing,removeDrawing,drawingsFor,drawingsForView,undoDrawing,redoDrawing,clearDrawings,duplicateDrawing,downloadJson} from './annotations.js';
 import {analyzeTrendline} from './trendline_research.js';
 import {createTrendDrawingEngine} from './drawing_engine.js';
 import {resolveTrendStyle} from './drawing_style.js';
@@ -108,8 +108,8 @@ function rebuildMap(){
     if(lo)structureSnaps.push({time:currentRows[i][0],price:currentRows[i][3],snapName:'Swing L'});
   }
 }
-function snapPoint(time,price,pixelY){
-  const mode=$('#snapMode').value;if(mode==='off')return {time,price,snapped:false};
+function snapPoint(time,price,pixelY,opts={}){
+  let mode=$('#snapMode').value;if(opts.invert)mode=mode==='off'?'structure':'off';if(mode==='off')return {time,price,snapped:false};
   if(mode==='structure'){
     let best=null,score=Infinity;
     for(const c of structureSnaps){
@@ -151,15 +151,24 @@ function setTool(name){
 }
 async function selectDrawing(id){
   selectedDrawingId=id;renderDrawings();const d=getDrawings().find(x=>x.id===id);if(structureEntryLab)structureEntryLab.refresh();
-  const editable=!!d&&d.type==='trend';
+  const editable=!!d&&d.type==='trend'&&!d.locked;
   $('#resetAnchorA').disabled=!editable;$('#resetAnchorB').disabled=!editable;$('#deleteSelected').disabled=!d;
-  if(!d){$('#drawingInfo').textContent='未选择图形。';return}
+  const bar=$('#drawingFloatBar');
+  if(!d){$('#drawingInfo').textContent='未选择图形。';bar?.classList.add('hidden');return}
   if(d.type==='trend'){
-    $('#drawingInfo').innerHTML=`已选趋势线 · 全周期同一结构对象<br>A ${fmtBJ(d.a.time)} @ ${num(d.a.price)}<br>B ${fmtBJ(d.b.time)} @ ${num(d.b.price)}<br>颜色 / 线宽 / 线型 / 几何在所有周期保持一致。`;
+    $('#drawingInfo').innerHTML=`已选趋势线 · 全周期同一结构对象<br>A ${fmtBJ(d.a.time)} @ ${num(d.a.price)}<br>B ${fmtBJ(d.b.time)} @ ${num(d.b.price)}`;
   }else if(d.type==='horizontal'){
-    $('#drawingInfo').innerHTML=`已选水平位 · 跨周期共享 · ${num(d.price)}<br>可直接锁入 Structure Case。`;
+    $('#drawingInfo').innerHTML=`已选水平位 · 全周期共享 · ${num(d.price)}`;
+  }
+  if(bar){
+    bar.classList.remove('hidden');$('#drawingFloatTitle').textContent=d.type==='trend'?'趋势线':'水平位';
+    const style=d.type==='trend'?resolveTrendStyle(d):resolveHorizontalStyle(d);
+    $('#drawingColor').value=style.color;$('#drawingWidth').value=String(style.lineWidth);$('#drawingLineStyle').value=String(style.lineStyle);
+    $('#drawingModeWrap').classList.toggle('hidden',d.type!=='trend');if(d.type==='trend')$('#drawingMode').value=d.mode||'ray';
+    $('#drawingLock').textContent=d.locked?'解锁':'锁定';
   }
 }
+
 function nearestDrawing(point,time){
   let best=null,bestPx=Infinity;
   for(const d of drawingsForView(currentTF,$('#showHigherTfTrendlines')?.checked!==false)){
@@ -185,35 +194,19 @@ function handleClick(p){
   }
   if(tool==='select'){const d=nearestDrawing(p.point,Number(p.time));selectDrawing(d?.id||null);return}
   if(tool==='trend')return; // V5 uses pointer-drag Drawing Engine instead of chart.subscribeClick().
-  if(tool==='horizontal'){const d={id:crypto.randomUUID(),type:'horizontal',timeframe:currentTF,price:snapped.price,createdAt:new Date().toISOString()};addDrawing(d);setTool('select');selectDrawing(d.id)}
+  if(tool==='horizontal'){const d={id:crypto.randomUUID(),type:'horizontal',timeframe:currentTF,drawnOnTimeframe:currentTF,price:snapped.price,style:newHorizontalStyle(),locked:false,visible:true,geometryRevision:1,styleRevision:1,createdAt:new Date().toISOString()};addDrawing(d);if(!$('#keepDrawing')?.checked)setTool('select');selectDrawing(d.id)}
 }
 function renderDrawings(){
-  lineSeries.forEach(x=>chart.removeSeries(x.series));lineSeries=[];
-  priceLines.forEach(p=>candle.removePriceLine(p));priceLines=[];
-  const showCross=$('#showHigherTfTrendlines')?.checked!==false;
-  for(const d of drawingsForView(currentTF,showCross)){
+  lineSeries.forEach(x=>chart.removeSeries(x.series));lineSeries=[];priceLines.forEach(p=>candle.removePriceLine(p));priceLines=[];
+  for(const d of drawingsForView(currentTF,$('#showHigherTfTrendlines')?.checked!==false)){
     if(d.type==='horizontal'){
-      priceLines.push(candle.createPriceLine({
-        price:d.price,
-        color:d.id===selectedDrawingId?'#9ed2ff':'#e7bf55',
-        lineWidth:d.id===selectedDrawingId?2:1,
-        lineStyle:2,axisLabelVisible:true,title:'关键位'
-      }));
+      const style=resolveHorizontalStyle(d);
+      priceLines.push(candle.createPriceLine({price:d.price,color:style.color,lineWidth:style.lineWidth,lineStyle:style.lineStyle,axisLabelVisible:true,title:'关键位'}));
     }else if(d.type==='trend'){
       const style=resolveTrendStyle(d);
-      const s=chart.addSeries(LineSeries,{
-        color:style.color,
-        lineWidth:style.lineWidth,
-        lineStyle:style.lineStyle,
-        priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false
-      });
+      const s=chart.addSeries(LineSeries,{color:style.color,lineWidth:style.lineWidth,lineStyle:style.lineStyle,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
       s.setData(linePoints(d.a,d.b,d.mode||'ray'));
-      if(d.id===selectedDrawingId){
-        createSeriesMarkers(s,[
-          {time:d.a.time,position:'inBar',shape:'circle',color:'#ffffff',text:'A'},
-          {time:d.b.time,position:'inBar',shape:'circle',color:'#ffffff',text:'B'}
-        ].sort((a,b)=>a.time-b.time));
-      }
+      if(d.id===selectedDrawingId)createSeriesMarkers(s,[{time:d.a.time,position:'inBar',shape:'circle',color:'#ffffff',text:'A'},{time:d.b.time,position:'inBar',shape:'circle',color:'#ffffff',text:'B'}].sort((a,b)=>a.time-b.time));
       lineSeries.push({id:d.id,series:s});
     }
   }
@@ -229,15 +222,15 @@ function renderCalibrationState(s){
     summary.innerHTML=`<strong>粗略画线中</strong><div class="small">${s.message||'拖动后松开即可自动识别锚点。'}</div>`;
     return;
   }
-  if(s.kind==='candidate'){
+  if(s.kind==='suggestion'){
     const c=s.candidates[s.index]||s.candidates[0];
     const conf=Math.round(Number(c.confidence??c.score??0)*100);
     const score=Math.round(Number(c.score??0)*100);
-    summary.innerHTML=`<strong>候选 ${s.index+1}/${s.candidates.length} · ${c.anchorType}</strong>
+    summary.innerHTML=`<strong>智能建议 ${s.index+1}/${s.candidates.length} · ${c.anchorType}</strong>
       <div class="small">A：${fmtBJ(c.a.time,true)} @ ${num(c.a.price)}<br>
       B：${fmtBJ(c.b.time,true)} @ ${num(c.b.price)}<br>
-      自动校准分 ${score} · 置信度 ${conf}% · 角色 ${c.role==='support'?'支撑':c.role==='resistance'?'阻力':'自动'}<br>
-      你只需要确认“是不是你想表达的那条线”。</div>`;
+      校准评分 ${score} · 置信度 ${conf}% · 角色 ${c.role==='support'?'支撑':c.role==='resistance'?'阻力':'自动'}<br>
+      手绘线已经保存；这里只是可选优化建议。</div>`;
   }
 }
 
@@ -354,6 +347,20 @@ function handleHumanLabelAction(e){
     removeHumanLabel(id);renderHumanMarkers();renderHumanLabelsTable();
   }
 }
+function deleteSelectedDrawing(){
+  if(!selectedDrawingId)return;
+  if(structureEntryLab?.isDrawingInUse?.(selectedDrawingId)){
+    if(!confirm('这个图形正在被当前结构案例使用。删除会解除当前案例引用，但历史案例版本仍会保留。继续吗？'))return;
+    structureEntryLab.detachDrawing?.(selectedDrawingId);
+  }
+  removeDrawing(selectedDrawingId);selectedDrawingId=null;renderDrawings();selectDrawing(null);
+}
+function updateSelectedStyle(){
+  const d=getDrawings().find(x=>x.id===selectedDrawingId);if(!d)return;
+  const style={color:$('#drawingColor').value,lineWidth:Number($('#drawingWidth').value),lineStyle:Number($('#drawingLineStyle').value)};
+  const patch={style};if(d.type==='trend')patch.mode=$('#drawingMode').value;
+  updateDrawing(d.id,patch);renderDrawings();selectDrawing(d.id);
+}
 async function init(){
   installModuleLayout();
   indexData=await loadIndex();initGlobalRange();
@@ -367,12 +374,17 @@ async function init(){
     calibrationMode:()=>$('#trendCalibrationMode').value,
     trendMode:()=>$('#trendMode').value,
     replayState:()=>researchReplayState,
+    snapPoint:(time,price,y,opts)=>snapPoint(time,price,y,opts),
     onState:renderCalibrationState,
     onCommit:(d)=>{
       addDrawing(d);
-      setTool('select');
+      if(!$('#keepDrawing')?.checked)setTool('select');
       selectDrawing(d.id);
-      $('#drawingInfo').innerHTML=`趋势线已自动校准。<br>原始粗略线已保存在 rawA/rawB；正式锚点 A/B 已识别。`;
+      $('#drawingInfo').innerHTML='趋势线已立即创建。智能校准只作为可选建议，不会阻挡继续研究。';
+    },
+    onApplySuggestion:(id,patch)=>{
+      updateDrawing(id,patch);renderDrawings();selectDrawing(id);
+      $('#drawingInfo').innerHTML='已应用智能校准建议；趋势线仍是同一个跨周期结构对象。';
     }
   });
   $('#timeframe').onchange=async()=>{
@@ -390,22 +402,37 @@ async function init(){
   $('#useRawTrendline').onclick=()=>drawingEngine?.useRaw();
   $('#cancelTrendDrawing').onclick=()=>{drawingEngine?.cancel();setTool('select')};
 
-  $('#undoDrawing').onclick=()=>{undoDrawing(currentTF);selectedDrawingId=null;renderDrawings()};
-  $('#clearDrawings').onclick=()=>{if(confirm('清空当前周期全部图形？')){clearDrawings(currentTF);selectedDrawingId=null;renderDrawings()}};
+  $('#undoDrawing').onclick=()=>{undoDrawing();selectedDrawingId=null;renderDrawings()};
+  $('#clearDrawings').onclick=()=>{if(confirm('清空全部图形？历史案例快照不会因此删除。')){clearDrawings();selectedDrawingId=null;renderDrawings();selectDrawing(null)}};
   $('#resetAnchorA').onclick=()=>{if(selectedDrawingId){reanchor='a';setTool('select');$('#drawingInfo').textContent='请在K线上点击新的锚点 A。'}};
   $('#resetAnchorB').onclick=()=>{if(selectedDrawingId){reanchor='b';setTool('select');$('#drawingInfo').textContent='请在K线上点击新的锚点 B。'}};
-  $('#deleteSelected').onclick=()=>{if(selectedDrawingId){removeDrawing(selectedDrawingId);selectedDrawingId=null;renderDrawings();selectDrawing(null)}};
+  $('#deleteSelected').onclick=deleteSelectedDrawing;
 
   $('#showHigherTfTrendlines').onchange=()=>renderDrawings();
+  $('#drawingColor').oninput=updateSelectedStyle;$('#drawingWidth').onchange=updateSelectedStyle;$('#drawingLineStyle').onchange=updateSelectedStyle;$('#drawingMode').onchange=updateSelectedStyle;
+  $('#drawingClone').onclick=()=>{if(!selectedDrawingId)return;const d=duplicateDrawing(selectedDrawingId);if(d){renderDrawings();selectDrawing(d.id)}};
+  $('#drawingLock').onclick=()=>{const d=getDrawings().find(x=>x.id===selectedDrawingId);if(d){updateDrawing(d.id,{locked:!d.locked});renderDrawings();selectDrawing(d.id)}};
+  $('#drawingUseCase').onclick=()=>{if(selectedDrawingId)$('#lockSelectedStructure')?.click()};
+  $('#drawingDelete').onclick=deleteSelectedDrawing;
+  $('#chartWrap').addEventListener('contextmenu',e=>{
+    if(researchReplayState.active&&!researchReplayState.futureRevealed)return;
+    e.preventDefault();const rect=$('#chart').getBoundingClientRect(),y=e.clientY-rect.top;
+    const price=candle?.coordinateToPrice(y);if(price==null||!Number.isFinite(Number(price)))return;
+    const d={id:crypto.randomUUID(),type:'horizontal',timeframe:currentTF,drawnOnTimeframe:currentTF,price:Number(price),style:newHorizontalStyle(),locked:false,visible:true,geometryRevision:1,styleRevision:1,createdAt:new Date().toISOString()};
+    addDrawing(d);renderDrawings();selectDrawing(d.id);
+  });
   window.addEventListener('palab:replay-state',e=>{researchReplayState={...researchReplayState,...(e.detail||{})}});
   window.addEventListener('keydown',e=>{
     const tag=(document.activeElement?.tagName||'').toLowerCase();
     if(['input','textarea','select'].includes(tag))return;
     if(e.key==='Escape'&&drawingEngine?.isActive()){e.preventDefault();drawingEngine.cancel();setTool('select');return}
-    if(e.key==='Enter'&&drawingEngine?.getState()?.kind==='candidate'){e.preventDefault();drawingEngine.accept();return}
-    if((e.key==='n'||e.key==='N')&&drawingEngine?.getState()?.kind==='candidate'){e.preventDefault();drawingEngine.nextCandidate();return}
-    if(e.key==='Delete'&&selectedDrawingId){e.preventDefault();removeDrawing(selectedDrawingId);selectedDrawingId=null;renderDrawings();selectDrawing(null);return}
-    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undoDrawing(currentTF);selectedDrawingId=null;renderDrawings()}
+    if(e.key==='Enter'&&drawingEngine?.getState()?.kind==='suggestion'){e.preventDefault();drawingEngine.accept();return}
+    if((e.key==='n'||e.key==='N')&&drawingEngine?.getState()?.kind==='suggestion'){e.preventDefault();drawingEngine.nextCandidate();return}
+    if(e.key==='Delete'&&selectedDrawingId){e.preventDefault();deleteSelectedDrawing();return}
+    if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key.toLowerCase()==='z'){e.preventDefault();redoDrawing();selectedDrawingId=null;renderDrawings();return}
+    if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key.toLowerCase()==='z'){e.preventDefault();undoDrawing();selectedDrawingId=null;renderDrawings();return}
+    if(e.altKey&&e.key.toLowerCase()==='t'){e.preventDefault();setTool('trend');return}
+    if(e.altKey&&e.key.toLowerCase()==='h'){e.preventDefault();setTool('horizontal');return}
   });
 
 

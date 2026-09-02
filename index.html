@@ -13,8 +13,8 @@
   <div class="badges"><span>北京时间 UTC+8</span><span>红涨绿跌</span><span>交互式研究</span><span>非实盘下单</span></div>
 </header>
 <nav class="modebar">
-  <button class="mode active" data-mode="editor">M01–M05 研究工作台</button>
-  <button class="mode" data-mode="research">M06 Blind Replay</button>
+  <button class="mode active" data-mode="editor">研究工作台</button>
+  <button class="mode" data-mode="research">盲测研究</button>
 </nav>
 <main>
 <section id="editorView">
@@ -46,7 +46,7 @@
   <label>趋势线类型
     <select id="trendMode"><option value="ray">趋势射线</option><option value="segment">线段</option><option value="infinite">无限直线</option></select>
   </label>
-  <label>自动校准
+  <label>智能校准
     <select id="trendCalibrationMode">
       <option value="dual">双锚点结构校准（默认）</option>
       <option value="fit">多点结构拟合</option>
@@ -60,20 +60,20 @@
     <button id="resetAnchorA" class="tool" disabled>重设锚点 A</button>
     <button id="resetAnchorB" class="tool" disabled>重设锚点 B</button>
     <button id="deleteSelected" class="tool danger" disabled>删除选中线</button>
-    <button id="clearDrawings" class="tool danger">清空本周期</button>
+    <button id="clearDrawings" class="tool danger">清空全部图形</button>
   </div>
-  <label class="check"><input id="showHigherTfTrendlines" type="checkbox" checked> 显示全部周期结构线（趋势线样式完全一致）</label>
+  <label class="check"><input id="showHigherTfTrendlines" type="checkbox" checked> 显示全部结构线（所有周期完全一致）</label>
   <div id="drawingInfo" class="infoBox">选择“趋势线”后，按住鼠标大概拖出方向即可；无需点准真实顶点/低点。</div>
   <button id="exportDrawings" class="tool wide">导出趋势线 JSON</button>
   <div id="trendCalibrationPanel" class="calibrationPanel hidden">
     <div id="calibrationSummary"></div>
     <div class="calibrationActions">
-      <button id="acceptCalibratedLine" class="primary">接受候选</button>
-      <button id="nextCalibrationCandidate">下一个候选</button>
-      <button id="useRawTrendline">使用原始手绘线</button>
+      <button id="acceptCalibratedLine" class="primary">应用建议</button>
+      <button id="nextCalibrationCandidate">下一条建议</button>
+      <button id="useRawTrendline">保留手绘线</button>
       <button id="cancelTrendDrawing">取消</button>
     </div>
-    <div class="shortcutHint">Enter 接受 · N 下一个 · Esc 取消</div>
+    <div class="shortcutHint">Enter 应用建议 · N 下一条 · Esc 关闭建议</div>
   </div>
 
   <h3>当前光标</h3>
@@ -114,21 +114,22 @@
   
   <div id="structureEntryLab" class="panel structureCaseLab">
     <div class="sectionHead">
-      <div><h3>结构案例 · 条件化买点研究室</h3><span>趋势线 / 水平位跨周期共享；周期只是不同分辨率的观察窗口</span></div>
+      <div><h3>结构研究工作台</h3><span>趋势线 / 水平位跨周期共享；周期只是不同分辨率的观察窗口</span></div>
       <div id="caseLockBadge" class="caseBadge">尚未建立 Structure Case</div>
       <div id="caseAutoSaveStatus" class="caseAutoSaveStatus">研究记录：准备中…</div>
+      <div id="caseStaleNotice" class="caseStaleNotice hidden">当前结构已经修改，最近一次扫描结果已标记为过期，请重新扫描。</div>
     </div>
 
     <div class="caseWorkflow">
       <section class="caseBox">
-        <h4>① 锁定母结构</h4>
+        <h4>① 当前研究结构</h4>
         <div class="caseObjects"><div id="caseTrend"></div><div id="caseHorizontal"></div><div id="caseZone"></div><div id="caseIdealZone"></div></div>
         <button id="lockSelectedStructure">锁定当前结构线</button>
         <button id="selectCaseZone" class="primary">选择买点研究区间</button>
         <button id="selectIdealZone">★ 选择理想买点区间</button>
         <button id="clearIdealZone">清空理想买点区间</button>
         <button id="resetStructureCase" class="danger">清空当前案例</button>
-        <div class="mutedNote">趋势线 / 水平位是跨周期结构对象；无论在哪个周期绘制，锁定后都按同一价格 / 时间几何关系投影到所有周期。绘制周期只保留为来源元数据。Entry Research Zone 和 Ideal Entry Zone 同样按绝对时间跨周期投影。</div>
+        <div class="mutedNote">趋势线 / 水平位是跨周期结构对象；无论在哪个周期绘制，锁定后都按同一价格 / 时间几何关系投影到所有周期。绘制周期只保留为来源元数据。买点研究区间 和 理想买点区间 同样按绝对时间跨周期投影。</div>
       </section>
 
       <section class="caseBox">
@@ -161,7 +162,7 @@
     </div>
 
     <details class="caseHistoryPanel" open>
-      <summary>M04 Case Research Ledger · 自动保存与历史版本</summary>
+      <summary>案例研究记录 · 自动保存与历史版本</summary>
       <div class="caseHistoryToolbar">
         <span>IndexedDB 主存储；当前 Case 同时保留 localStorage 兼容缓存。</span>
         <button id="refreshCaseHistory">刷新历史</button>
@@ -237,11 +238,11 @@
 
   <div id="researchPanel" class="panel researchLab">
     <div class="sectionHead">
-      <div><h3>策略开发室 · Blind Replay</h3><span>严格隐藏未来 → 做判断 → 保存 Feature Snapshot → 再看结果</span></div>
+      <div><h3>盲测研究</h3><span>严格隐藏未来 → 做判断 → 保存 特征快照 → 再看结果</span></div>
       <div class="researchActions">
-        <button id="startBlindReplay" class="primary">随机 Blind Replay</button>
-        <button id="nextBlindReplay">换一个案例</button>
-        <button id="snapshotCurrent">抓取当前快照</button>
+        <button id="startBlindReplay" class="primary">随机盲测</button>
+        <button id="nextBlindReplay">更换案例</button>
+        <button id="snapshotCurrent">保存当前快照</button>
         <button id="revealFuture" disabled>显示未来</button>
       </div>
     </div>
@@ -251,7 +252,7 @@
       <section class="researchBox">
         <h4>市场阶段概率</h4>
         <div id="stageProb"></div>
-        <div class="clarityWrap"><span>Setup Clarity</span><div id="clarityScore"><strong>—</strong><span>/100</span></div></div>
+        <div class="clarityWrap"><span>形态清晰度</span><div id="clarityScore"><strong>—</strong><span>/100</span></div></div>
         <div class="mutedNote">Clarity 只衡量结构“明显程度”，不是预测收益。</div>
       </section>
 
@@ -267,7 +268,7 @@
           <button data-dir="2">强烈做多</button><button data-dir="1">偏多</button><button data-dir="0">不交易</button>
           <button data-dir="-1">偏空</button><button data-dir="-2">强烈做空</button>
         </div>
-        <label>Setup<select id="setupType"></select></label>
+        <label>形态类型<select id="setupType"></select></label>
         <label>策略版本<input id="strategyVersion" value="PA_SETUP_V001"></label>
         <label>置信度 <span id="researchConfidenceText">80</span><input id="researchConfidence" type="range" min="50" max="100" value="80"></label>
       </section>

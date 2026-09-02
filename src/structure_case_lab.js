@@ -156,7 +156,7 @@ export function initStructureCaseLab(api){
     const box=$('#caseHistoryList');if(!box)return;
     try{
       const cases=await listStructureCases(100);
-      if(!cases.length){box.innerHTML='<div class="mutedNote">还没有研究案例。建立 Structure Case 后会自动出现。</div>';return}
+      if(!cases.length){box.innerHTML='<div class="mutedNote">还没有研究案例。建立 结构案例 后会自动出现。</div>';return}
       box.innerHTML=cases.map(row=>`<article class="caseHistoryItem ${row.id===c?.id?'current':''}"><div class="caseHistoryMain"><div><b>${row.id}</b><span>跨周期结构 · ${row.status||'active'} · 更新 ${new Date(row.updatedAt).toLocaleString('zh-CN',{hour12:false})}</span></div><button data-show-versions="${row.id}">版本历史</button></div><div class="caseVersionList hidden" data-version-list="${row.id}"></div></article>`).join('');
       box.querySelectorAll('[data-show-versions]').forEach(b=>b.onclick=async()=>{const host=box.querySelector(`[data-version-list="${b.dataset.showVersions}"]`);if(!host)return;const opening=host.classList.contains('hidden');host.classList.toggle('hidden');if(opening)await renderCaseVersions(b.dataset.showVersions,host)});
     }catch(err){box.textContent='历史案例读取失败：'+err.message}
@@ -189,18 +189,42 @@ export function initStructureCaseLab(api){
     if(!c?.idealZone)return 0;
     return (c.candidates||[]).filter(x=>classifyByIdealZone(x,c.idealZone)==='IN_IDEAL_ZONE').length;
   }
+  function syncLiveStructure(kind='refresh'){
+    if(!c)return false;
+    const all=getDrawings();let changed=false,geometryChanged=false;
+    const sync=(refKey,objKey)=>{
+      const ref=c[refKey];if(!ref?.drawingId)return;
+      const live=all.find(x=>x.id===ref.drawingId);if(!live)return;
+      const oldGeo=Number(ref.geometryRevision||1),newGeo=Number(live.geometryRevision||1);
+      if(newGeo!==oldGeo){geometryChanged=true;changed=true}
+      if(Number(ref.styleRevision||1)!==Number(live.styleRevision||1))changed=true;
+      c[objKey]=clone(live);c[refKey]={drawingId:live.id,geometryRevision:newGeo,styleRevision:Number(live.styleRevision||1)};
+    };
+    sync('trendlineRef','trendline');sync('horizontalRef','horizontal');
+    if(geometryChanged&&c.candidates?.length)c.scanStale=true;
+    if(changed&&kind!=='render')putCase(c,geometryChanged?'structure_geometry_changed':'structure_style_changed');
+    return changed;
+  }
+  function isDrawingInUse(id){return !!c&&(c.trendlineRef?.drawingId===id||c.horizontalRef?.drawingId===id||c.trendline?.id===id||c.horizontal?.id===id)}
+  function detachDrawing(id){
+    if(!c)return;
+    if(c.trendlineRef?.drawingId===id||c.trendline?.id===id){c.trendlineRef=null;c.trendline=null}
+    if(c.horizontalRef?.drawingId===id||c.horizontal?.id===id){c.horizontalRef=null;c.horizontal=null}
+    c.scanStale=!!c.candidates?.length;putCase(c,'structure_detached');renderCase();
+  }
   function renderCase(){
-    c=getCase()||c;
+    c=getCase()||c;syncLiveStructure('render');
     const badge=$('#caseLockBadge');
-    if(!c){badge.textContent='尚未建立 Structure Case';badge.className='caseBadge'}
+    if(!c){badge.textContent='尚未建立 结构案例';badge.className='caseBadge'}
     else{badge.textContent=`${c.id} · 跨周期结构 · 趋势线 / 水平位全周期共享`;badge.className='caseBadge locked'}
     const t=c?.trendline,h=c?.horizontal,z=c?.zone,iz=c?.idealZone;
     $('#caseTrend').innerHTML=t?`<b>趋势线</b><span>跨周期共享 · A ${fmtBJ(t.a.time)} @ ${num(t.a.price)}<br>B ${fmtBJ(t.b.time)} @ ${num(t.b.price)}</span>`:'<b>趋势线</b><span>未锁定</span>';
     $('#caseHorizontal').innerHTML=h?`<b>水平位</b><span>跨周期共享 · ${num(h.price)}</span>`:'<b>水平位</b><span>未锁定</span>';
-    $('#caseZone').innerHTML=z?`<b>Entry Research Zone</b><span>在 ${TF_LABEL[z.selectedOnTf]||z.selectedOnTf} 选择<br>${fmtBJ(z.start)} → ${fmtBJ(z.end)}</span>`:'<b>Entry Research Zone</b><span>未选择</span>';
-    $('#caseIdealZone').innerHTML=iz?`<b>Ideal Entry Zone</b><span>在 ${TF_LABEL[iz.selectedOnTf]||iz.selectedOnTf} 选择<br>${fmtBJ(iz.start)} → ${fmtBJ(iz.end)}</span>`:'<b>Ideal Entry Zone</b><span>未选择</span>';
+    $('#caseZone').innerHTML=z?`<b>买点研究区间</b><span>在 ${TF_LABEL[z.selectedOnTf]||z.selectedOnTf} 选择<br>${fmtBJ(z.start)} → ${fmtBJ(z.end)}</span>`:'<b>买点研究区间</b><span>未选择</span>';
+    $('#caseIdealZone').innerHTML=iz?`<b>理想买点区间</b><span>在 ${TF_LABEL[iz.selectedOnTf]||iz.selectedOnTf} 选择<br>${fmtBJ(iz.start)} → ${fmtBJ(iz.end)}</span>`:'<b>理想买点区间</b><span>未选择</span>';
     $('#caseCandidateCount').textContent=c?.candidates?.length||0;
     $('#caseIdealCount').textContent=idealHitCount();
+    $('#caseStaleNotice')?.classList.toggle('hidden',!c?.scanStale);
     renderOverlays();renderMarkers();renderCandidateList();renderIdealZone();renderExplanation();renderTimeline();
   }
   function lockSelected(){
@@ -208,14 +232,17 @@ export function initStructureCaseLab(api){
     const sc=ensureCase(d.timeframe);
     sc.structureScope='cross_timeframe';
     if(d.type==='trend'){
-      sc.trendline={id:d.id,sourceTf:d.timeframe,type:'trend',a:clone(d.a),b:clone(d.b),mode:d.mode||'ray',style:resolveTrendStyle(d),role:d.role||'auto',zoneAtr:Number(d.zoneAtr??.25),calibration:clone(d.calibration||null)};
+      sc.trendlineRef={drawingId:d.id,geometryRevision:Number(d.geometryRevision||1),styleRevision:Number(d.styleRevision||1)};
+      sc.trendline=clone(d);
     }else if(d.type==='horizontal'){
-      sc.horizontal={id:d.id,sourceTf:d.timeframe,type:'horizontal',price:Number(d.price)};
+      sc.horizontalRef={drawingId:d.id,geometryRevision:Number(d.geometryRevision||1),styleRevision:Number(d.styleRevision||1)};
+      sc.horizontal=clone(d);
     }else return;
+    sc.scanStale=false;
     putCase(sc,'structure_locked');c=sc;renderCase();
   }
   async function resetCase(){
-    if(!confirm('归档并清空当前 Structure Case、候选和区间？主图原始趋势线/水平线不会删除。'))return;
+    if(!confirm('归档并清空当前 结构案例、候选和区间？主图原始趋势线/水平线不会删除。'))return;
     if(c?.id)await persistResearchNow('case_archived','archived');
     suppressResearchPersist=true;try{c=null;putCase(null);localStorage.removeItem(FEEDBACK)}finally{suppressResearchPersist=false}
     clearMini();api.setEntryMarkers([]);renderCase();renderCaseHistory();saveState('当前 Case 已归档；等待建立新 Case。','saved');
@@ -241,11 +268,11 @@ export function initStructureCaseLab(api){
   function stop(ev){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation?.()}
   function beginSelection(mode){
     if(mode==='entry'&&(!c?.trendline||!c?.horizontal)){alert('先锁定趋势线和水平线。');return}
-    if(mode==='ideal'&&!c?.zone){alert('先选择 Entry Research Zone。');return}
+    if(mode==='ideal'&&!c?.zone){alert('先选择 买点研究区间。');return}
     selectionMode=mode;drag=false;zA=zB=null;chartEl.classList.add('zoneSelectActive');
     $('#caseStatus').textContent=mode==='entry'
-      ?`正在 ${TF_LABEL[api.currentTF()]} 主图选择 Entry Research Zone…`
-      :`正在 ${TF_LABEL[api.currentTF()]} 主图选择我的 Ideal Entry Zone…`;
+      ?`正在 ${TF_LABEL[api.currentTF()]} 主图选择 买点研究区间…`
+      :`正在 ${TF_LABEL[api.currentTF()]} 主图选择我的 理想买点区间…`;
   }
   function down(ev){if(!selectionMode||ev.button!==0)return;const t=eventTime(ev);if(t==null)return;stop(ev);drag=true;zA=t;zB=t;renderOverlays()}
   function move(ev){if(!selectionMode||!drag)return;const t=eventTime(ev);if(t==null)return;stop(ev);zB=t;renderOverlays()}
@@ -256,12 +283,12 @@ export function initStructureCaseLab(api){
       const zone={start:Math.min(zA,zB),end:Math.max(zA,zB),selectedOnTf:api.currentTF()};
       if(mode==='entry'){
         c.zone=zone;c.idealZone=null;c.candidates=[];putFeedback({});explanation=[];idealExplanation=[];
-        $('#caseStatus').textContent=`Entry Research Zone 已在 ${TF_LABEL[zone.selectedOnTf]} 选择，并按绝对时间跨周期锁定。`;
+        $('#caseStatus').textContent=`买点研究区间 已在 ${TF_LABEL[zone.selectedOnTf]} 选择，并按绝对时间跨周期锁定。`;
       }else{
         // Keep the ideal zone inside the research zone to avoid ambiguous labels.
         zone.start=Math.max(zone.start,Number(c.zone.start));zone.end=Math.min(zone.end,Number(c.zone.end));
-        if(zone.start>=zone.end){alert('理想买点区间必须与 Entry Research Zone 重叠。');}
-        else{c.idealZone=zone;$('#caseStatus').textContent=`Ideal Entry Zone 已在 ${TF_LABEL[zone.selectedOnTf]} 选择。`}
+        if(zone.start>=zone.end){alert('理想买点区间必须与 买点研究区间 重叠。');}
+        else{c.idealZone=zone;$('#caseStatus').textContent=`理想买点区间 已在 ${TF_LABEL[zone.selectedOnTf]} 选择。`}
       }
       putCase(c,mode==='entry'?'entry_zone_changed':'ideal_zone_changed');
     }
@@ -350,7 +377,8 @@ export function initStructureCaseLab(api){
     const ctx=await loadCtx(api.indexData(),from,to);return{tfs,ctx}
   }
   async function scan(){
-    if(!c?.trendline||!c?.horizontal||!c?.zone){alert('需要锁定趋势线、水平线并选择 Entry Research Zone。');return}
+    syncLiveStructure('pre_scan');
+    if(!c?.trendline||!c?.horizontal||!c?.zone){alert('需要锁定趋势线、水平线并选择 买点研究区间。');return}
     await persistResearchNow('pre_scan');
     $('#scanCaseEntries').disabled=true;$('#caseStatus').textContent='准备低周期数据…';
     try{
@@ -361,7 +389,7 @@ export function initStructureCaseLab(api){
         if(m.type==='PROGRESS')$('#caseStatus').textContent=`Web Worker 扫描 ${TF_LABEL[m.timeframe]} · ${m.done+1}/${m.total}`;
         if(m.type==='ERROR'){$('#caseStatus').textContent='扫描失败：'+m.message;$('#scanCaseEntries').disabled=false}
         if(m.type==='DONE'){
-          const oldFb=getFeedback(),all=m.results.flatMap(x=>x.candidates||[]);c.candidates=all;putCase(c,'scan_complete');
+          const oldFb=getFeedback(),all=m.results.flatMap(x=>x.candidates||[]);c.candidates=all;c.scanStale=false;putCase(c,'scan_complete');
           const ids=new Set(all.map(x=>x.id)),nf={};for(const[k,v]of Object.entries(oldFb))if(ids.has(k))nf[k]=v;putFeedback(nf,'scan_feedback_reconciled');
           persistResearchNow('scan_complete');
           explanation=explainCase(all,binaryFeedback());idealExplanation=explainIdealZone(all,c.idealZone);
@@ -695,9 +723,10 @@ export function initStructureCaseLab(api){
     try{
       let drafts=[];try{drafts=JSON.parse(localStorage.getItem(DRAFTS)||'[]')}catch{}
       await migrateLegacyStructureCaseResearch({caseData:c,feedback:getFeedback(),drafts});await renderCaseHistory();
-      if(c?.id)await persistResearchNow('session_open');else saveState('研究记录：等待建立 Structure Case。','saved');
-    }catch(err){saveState('Research Ledger 初始化失败：'+err.message,'error')}
+      if(c?.id)await persistResearchNow('session_open');else saveState('研究记录：等待建立 结构案例。','saved');
+    }catch(err){saveState('研究记录 初始化失败：'+err.message,'error')}
   })();
   renderCase();
-  return {dataChanged,chartRebuilt,refresh,case:()=>c};
+  window.addEventListener('priceaction:drawing-changed',e=>{const d=e.detail||{};if(d.kind==='style'||d.kind==='geometry'||d.kind==='undo'||d.kind==='redo'){if(syncLiveStructure(d.kind)){renderCase()}}});
+  return {dataChanged,chartRebuilt,refresh,case:()=>c,isDrawingInUse,detachDrawing};
 }
