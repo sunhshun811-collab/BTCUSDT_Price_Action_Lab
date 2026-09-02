@@ -1,14 +1,26 @@
 {
   "month": "2026-09",
-  "error": "NO_KLINE_SOURCE_DATA",
   "kline_1m": {
-    "expected": 1644,
-    "rows": 0,
-    "coverage": 0.0,
-    "missing": 1644
+    "expected": 2354,
+    "rows": 1440,
+    "coverage": 0.6117247238742566,
+    "missing": 914
   },
-  "source_coverage": {},
+  "context_5m_rows": 288,
+  "source_coverage": {
+    "kline_taker": 1.0,
+    "funding": 0.0,
+    "mark": 1.0,
+    "index": 1.0,
+    "premium": 1.0,
+    "metrics": 0.0
+  },
   "sources": {
-    "klines": "missing"
+    "klines": "daily",
+    "funding": "missing",
+    "mark": "daily",
+    "index": "daily",
+    "premium": "daily",
+    "metrics": "daily"
   }
 }
