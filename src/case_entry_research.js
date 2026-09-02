@@ -229,7 +229,13 @@ export function buildCaseDraft(structureCase,feedback={},explanation=[]){
     version:'STRUCTURE_ENTRY_V002',
     status:'CURRENT_CASE_EXPLANATION_ONLY',
     structureCaseId:structureCase.id,
-    sourceTimeframe:structureCase.sourceTf,
+    structureScope:'CROSS_TIMEFRAME',
+    sourceTimeframe:structureCase.sourceTf, // provenance only
+    structureSourceMetadata:{
+      caseCreatedOnTimeframe:structureCase.createdOnTf||structureCase.sourceTf||null,
+      trendlineDrawnOnTimeframe:structureCase.trendline?.sourceTf||null,
+      horizontalDrawnOnTimeframe:structureCase.horizontal?.sourceTf||null
+    },
     structure:{
       trendline:structureCase.trendline,
       horizontal:structureCase.horizontal,

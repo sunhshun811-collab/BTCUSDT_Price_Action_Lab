@@ -114,7 +114,7 @@
   
   <div id="structureEntryLab" class="panel structureCaseLab">
     <div class="sectionHead">
-      <div><h3>结构案例 · 条件化买点研究室</h3><span>母结构全局固定；周期只是不同分辨率的观察窗口</span></div>
+      <div><h3>结构案例 · 条件化买点研究室</h3><span>趋势线 / 水平位跨周期共享；周期只是不同分辨率的观察窗口</span></div>
       <div id="caseLockBadge" class="caseBadge">尚未建立 Structure Case</div>
       <div id="caseAutoSaveStatus" class="caseAutoSaveStatus">研究记录：准备中…</div>
     </div>
@@ -128,7 +128,7 @@
         <button id="selectIdealZone">★ 选择理想买点区间</button>
         <button id="clearIdealZone">清空理想买点区间</button>
         <button id="resetStructureCase" class="danger">清空当前案例</button>
-        <div class="mutedNote">趋势线/水平线保持原规格；Entry Research Zone 和 Ideal Entry Zone 都按绝对时间保存，可在任意周期选择并跨周期原样投影。</div>
+        <div class="mutedNote">趋势线 / 水平位是跨周期结构对象；无论在哪个周期绘制，锁定后都按同一价格 / 时间几何关系投影到所有周期。绘制周期只保留为来源元数据。Entry Research Zone 和 Ideal Entry Zone 同样按绝对时间跨周期投影。</div>
       </section>
 
       <section class="caseBox">
@@ -141,7 +141,7 @@
           <label><input type="checkbox" value="1m" checked>1m</label>
         </div>
         <button id="scanCaseEntries" class="primary">扫描当前案例低周期买点</button>
-        <div id="caseStatus" class="caseStatus">先锁定 8H 趋势线、水平线和 Entry Zone。</div>
+        <div id="caseStatus" class="caseStatus">先锁定趋势线、水平位和 Entry Zone；结构对象跨周期共享。</div>
       </section>
 
       <section class="caseBox">

@@ -34,6 +34,8 @@ function normalizeCase(c){
   if(!c)return null;
   c.candidates=Array.isArray(c.candidates)?c.candidates:[];
   c.idealZone=c.idealZone||null;
+  c.structureScope='cross_timeframe';
+  c.createdOnTf=c.createdOnTf||c.sourceTf||c.trendline?.sourceTf||c.horizontal?.sourceTf||null;
   // V7 ideal points are intentionally not converted to a zone automatically.
   if(!Array.isArray(c.legacyIdealEntries)&&Array.isArray(c.idealEntries)&&c.idealEntries.length)c.legacyIdealEntries=clone(c.idealEntries);
   delete c.idealEntries;
@@ -154,17 +156,26 @@ export function initStructureCaseLab(api){
     try{
       const cases=await listStructureCases(100);
       if(!cases.length){box.innerHTML='<div class="mutedNote">还没有研究案例。建立 Structure Case 后会自动出现。</div>';return}
-      box.innerHTML=cases.map(row=>`<article class="caseHistoryItem ${row.id===c?.id?'current':''}"><div class="caseHistoryMain"><div><b>${row.id}</b><span>${TF_LABEL[row.sourceTf]||row.sourceTf||'—'} · ${row.status||'active'} · 更新 ${new Date(row.updatedAt).toLocaleString('zh-CN',{hour12:false})}</span></div><button data-show-versions="${row.id}">版本历史</button></div><div class="caseVersionList hidden" data-version-list="${row.id}"></div></article>`).join('');
+      box.innerHTML=cases.map(row=>`<article class="caseHistoryItem ${row.id===c?.id?'current':''}"><div class="caseHistoryMain"><div><b>${row.id}</b><span>跨周期结构 · ${row.status||'active'} · 更新 ${new Date(row.updatedAt).toLocaleString('zh-CN',{hour12:false})}</span></div><button data-show-versions="${row.id}">版本历史</button></div><div class="caseVersionList hidden" data-version-list="${row.id}"></div></article>`).join('');
       box.querySelectorAll('[data-show-versions]').forEach(b=>b.onclick=async()=>{const host=box.querySelector(`[data-version-list="${b.dataset.showVersions}"]`);if(!host)return;const opening=host.classList.contains('hidden');host.classList.toggle('hidden');if(opening)await renderCaseVersions(b.dataset.showVersions,host)});
     }catch(err){box.textContent='历史案例读取失败：'+err.message}
   }
 
   function selectedDrawing(){const d=api.selectedDrawing();return d?clone(d):null}
-  function ensureCase(sourceTf){
-    if(!c)c={id:`CASE_${Date.now()}`,sourceTf,trendline:null,horizontal:null,zone:null,idealZone:null,candidates:[],createdAt:new Date().toISOString()};
+  function ensureCase(createdOnTf){
+    if(!c)c={
+      id:`CASE_${Date.now()}`,
+      sourceTf:createdOnTf,
+      createdOnTf,
+      structureScope:'cross_timeframe',
+      trendline:null,horizontal:null,zone:null,idealZone:null,candidates:[],
+      createdAt:new Date().toISOString()
+    };
+    c.structureScope='cross_timeframe';
+    c.createdOnTf=c.createdOnTf||createdOnTf||c.sourceTf||null;
     return c;
   }
-  
+
   function binaryFeedback(){
     const j=getFeedback(),out={};
     for(const [id,v] of Object.entries(j)){
@@ -181,10 +192,10 @@ export function initStructureCaseLab(api){
     c=getCase()||c;
     const badge=$('#caseLockBadge');
     if(!c){badge.textContent='尚未建立 Structure Case';badge.className='caseBadge'}
-    else{badge.textContent=`${c.id} · 结构母周期 ${TF_LABEL[c.sourceTf]||c.sourceTf} · 跨周期锁定`;badge.className='caseBadge locked'}
+    else{badge.textContent=`${c.id} · 跨周期结构 · 趋势线 / 水平位全周期共享`;badge.className='caseBadge locked'}
     const t=c?.trendline,h=c?.horizontal,z=c?.zone,iz=c?.idealZone;
-    $('#caseTrend').innerHTML=t?`<b>趋势线</b><span>${TF_LABEL[t.sourceTf]} · A ${fmtBJ(t.a.time)} @ ${num(t.a.price)}<br>B ${fmtBJ(t.b.time)} @ ${num(t.b.price)}</span>`:'<b>趋势线</b><span>未锁定</span>';
-    $('#caseHorizontal').innerHTML=h?`<b>水平线</b><span>${TF_LABEL[h.sourceTf]} · ${num(h.price)}</span>`:'<b>水平线</b><span>未锁定</span>';
+    $('#caseTrend').innerHTML=t?`<b>趋势线</b><span>跨周期共享 · A ${fmtBJ(t.a.time)} @ ${num(t.a.price)}<br>B ${fmtBJ(t.b.time)} @ ${num(t.b.price)}</span>`:'<b>趋势线</b><span>未锁定</span>';
+    $('#caseHorizontal').innerHTML=h?`<b>水平位</b><span>跨周期共享 · ${num(h.price)}</span>`:'<b>水平位</b><span>未锁定</span>';
     $('#caseZone').innerHTML=z?`<b>Entry Research Zone</b><span>在 ${TF_LABEL[z.selectedOnTf]||z.selectedOnTf} 选择<br>${fmtBJ(z.start)} → ${fmtBJ(z.end)}</span>`:'<b>Entry Research Zone</b><span>未选择</span>';
     $('#caseIdealZone').innerHTML=iz?`<b>Ideal Entry Zone</b><span>在 ${TF_LABEL[iz.selectedOnTf]||iz.selectedOnTf} 选择<br>${fmtBJ(iz.start)} → ${fmtBJ(iz.end)}</span>`:'<b>Ideal Entry Zone</b><span>未选择</span>';
     $('#caseCandidateCount').textContent=c?.candidates?.length||0;
@@ -194,9 +205,7 @@ export function initStructureCaseLab(api){
   function lockSelected(){
     const d=selectedDrawing();if(!d){alert('先在主图选择趋势线或水平线。');return}
     const sc=ensureCase(d.timeframe);
-    if(sc.sourceTf!==d.timeframe){
-      alert(`当前 Structure Case 的结构母周期是 ${TF_LABEL[sc.sourceTf]}。趋势线/水平线仍建议在同一结构周期锁定。`);return;
-    }
+    sc.structureScope='cross_timeframe';
     if(d.type==='trend'){
       sc.trendline={id:d.id,sourceTf:d.timeframe,type:'trend',a:clone(d.a),b:clone(d.b),mode:d.mode||'ray',role:d.role||'auto',zoneAtr:Number(d.zoneAtr??.25),calibration:clone(d.calibration||null)};
     }else if(d.type==='horizontal'){
@@ -311,7 +320,7 @@ export function initStructureCaseLab(api){
     $('#caseMiniCharts').appendChild(host);
     const ch=createChart(host.querySelector('.caseMiniChart'),miniOptions()),s=ch.addSeries(CandlestickSeries,candleOptions());
     s.setData(toCandleRows(rows));
-    s.createPriceLine({price:Number(c.horizontal.price),color:'#e7bf55',lineWidth:1,lineStyle:2,axisLabelVisible:true,title:`${c.horizontal.sourceTf}水平位`});
+    s.createPriceLine({price:Number(c.horizontal.price),color:'#e7bf55',lineWidth:1,lineStyle:2,axisLabelVisible:true,title:'结构水平位'});
     const tl=ch.addSeries(LineSeries,{color:'#55a7ff',lineWidth:2,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
     tl.setData(projectedTrendData(c.trendline,rows[0]?.[0]??c.zone.start,rows.at(-1)?.[0]??c.zone.end));
     createSeriesMarkers(s,miniMarkers(tf));
@@ -545,7 +554,7 @@ export function initStructureCaseLab(api){
     const topExplain=(d.strongestCurrentCaseSeparators||[]).slice(0,5);
     $('#caseDraftExplain').innerHTML=`
       <div class="strategySection"><h5>当前案例背景</h5><ul class="strategyList">
-        <li>结构周期：${TF_LABEL[c.sourceTf]}</li>
+        <li>结构范围：趋势线 / 水平位跨周期共享</li>
         <li>趋势线：已锁定，跨周期规格不变</li>
         <li>水平位：${num(c.horizontal?.price)}</li>
         <li>买点研究区间：${fmtBJ(c.zone?.start)} → ${fmtBJ(c.zone?.end)}</li>
