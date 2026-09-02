@@ -1,7 +1,7 @@
 
 import {createChart,CandlestickSeries,LineSeries,createSeriesMarkers,CrosshairMode} from 'lightweight-charts';
 import {toCandleRows} from './data.js';
-import {loadMonthsSmart as loadMonths,loadContextsSmart as loadContexts} from './data_foundation_v10.js';
+import {loadMonthsSmart as loadMonths,loadContextsSmart as loadContexts,saveStructureCaseResearch,listStructureCases,listStructureCaseVersions,getStructureCaseVersion,migrateLegacyStructureCaseResearch} from './data_foundation_v10.js';
 import {getDrawings} from './annotations.js';
 import {TF_SECONDS,linePrice,explainCase,explainIdealZone,classifyByIdealZone,buildCaseDraft} from './case_entry_research.js';
 
@@ -49,7 +49,12 @@ function getCase(){
     return normalizeCase(c);
   }catch{return null}
 }
-function putCase(c){if(c){c.updatedAt=new Date().toISOString();localStorage.setItem(STORE,JSON.stringify(c))}else localStorage.removeItem(STORE)}
+let casePersistHook=null,feedbackPersistHook=null;
+function putCase(c,reason='case_update'){
+  if(c){c.updatedAt=new Date().toISOString();localStorage.setItem(STORE,JSON.stringify(c))}
+  else localStorage.removeItem(STORE);
+  casePersistHook?.(reason);
+}
 function getFeedback(){
   try{
     let x=JSON.parse(localStorage.getItem(FEEDBACK)||'null');
@@ -71,7 +76,10 @@ function getFeedback(){
     return x||{};
   }catch{return{}}
 }
-function putFeedback(x){localStorage.setItem(FEEDBACK,JSON.stringify(x))}
+function putFeedback(x,reason='judgement_update'){
+  localStorage.setItem(FEEDBACK,JSON.stringify(x));
+  feedbackPersistHook?.(reason);
+}
 function monthsFor(indexData,tf,from,to){
   return (indexData.timeframes?.[tf]||[]).filter(m=>{
     const [y,mo]=m.split('-').map(Number),a=Date.UTC(y,mo-1,1)/1000,b=Date.UTC(y+(mo===12),mo===12?0:mo,1)/1000;
@@ -99,7 +107,57 @@ function candleOptions(){return{upColor:'#ef5350',downColor:'#26a69a',borderVisi
 
 export function initStructureCaseLab(api){
   let c=getCase(),selectionMode=null,drag=false,zA=null,zB=null,mini=[],worker=null,explanation=[],idealExplanation=[],rowCache={};
+  const detailAutoSaveTimers=new Map();
+  let researchSaveTimer=null,researchSaveReason='autosave',suppressResearchPersist=false,lastDraft=null;
   const chartEl=api.chartContainer(),wrap=api.chartWrap(),entryOverlay=$('#entryZoneOverlay'),idealOverlay=$('#idealZoneOverlay');
+
+  function saveState(text,state='saved'){
+    const el=$('#caseAutoSaveStatus');if(!el)return;el.textContent=text;el.dataset.state=state;
+  }
+  async function persistResearchNow(reason='autosave',status='active',draft=lastDraft){
+    if(suppressResearchPersist||!c?.id)return null;
+    if(researchSaveTimer){clearTimeout(researchSaveTimer);researchSaveTimer=null}
+    saveState('研究记录：正在保存…','saving');
+    try{
+      const v=await saveStructureCaseResearch({caseData:clone(c),feedback:clone(getFeedback()),draft:clone(draft),reason,status,meta:{selectedTfs:tfChecks(),module:'M04'}});
+      const t=new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
+      saveState(`已自动保存 ${t} · ${reason}`,'saved');renderCaseHistory();return v;
+    }catch(err){console.error('M04 research persistence failed',err);saveState('研究记录保存失败：'+err.message,'error');return null}
+  }
+  function scheduleResearchSave(reason='autosave',delay=420){
+    if(suppressResearchPersist||!c?.id)return;researchSaveReason=reason;
+    if(researchSaveTimer)clearTimeout(researchSaveTimer);
+    saveState('研究记录：等待自动保存…','pending');
+    researchSaveTimer=setTimeout(()=>persistResearchNow(researchSaveReason),delay);
+  }
+  casePersistHook=reason=>scheduleResearchSave(reason);
+  feedbackPersistHook=reason=>scheduleResearchSave(reason);
+
+  async function restoreResearchVersion(versionId){
+    const v=await getStructureCaseVersion(versionId);if(!v?.caseData)return;
+    if(!confirm(`恢复 ${v.caseId} 的历史版本？当前状态会先形成自动保存版本。`))return;
+    await persistResearchNow('before_version_restore');
+    suppressResearchPersist=true;
+    try{c=normalizeCase(clone(v.caseData));localStorage.setItem(STORE,JSON.stringify(c));localStorage.setItem(FEEDBACK,JSON.stringify(v.feedback||{}));lastDraft=clone(v.draft||null)}
+    finally{suppressResearchPersist=false}
+    rowCache={};clearMini();renderCase();
+    if(lastDraft){$('#caseDraft').textContent=JSON.stringify(lastDraft,null,2);renderDraftExplanation(lastDraft)}
+    await persistResearchNow('version_restored');
+  }
+  async function renderCaseVersions(caseId,host){
+    const versions=await listStructureCaseVersions(caseId,80);
+    host.innerHTML=versions.length?versions.map(v=>`<div class="caseVersionRow"><div><b>${v.reason||'autosave'}</b><span>${new Date(v.createdAt).toLocaleString('zh-CN',{hour12:false})} · ${v.status||'active'}</span></div><button data-restore-version="${v.versionId}">恢复</button></div>`).join(''):'<div class="mutedNote">暂无版本。</div>';
+    host.querySelectorAll('[data-restore-version]').forEach(b=>b.onclick=()=>restoreResearchVersion(b.dataset.restoreVersion));
+  }
+  async function renderCaseHistory(){
+    const box=$('#caseHistoryList');if(!box)return;
+    try{
+      const cases=await listStructureCases(100);
+      if(!cases.length){box.innerHTML='<div class="mutedNote">还没有研究案例。建立 Structure Case 后会自动出现。</div>';return}
+      box.innerHTML=cases.map(row=>`<article class="caseHistoryItem ${row.id===c?.id?'current':''}"><div class="caseHistoryMain"><div><b>${row.id}</b><span>${TF_LABEL[row.sourceTf]||row.sourceTf||'—'} · ${row.status||'active'} · 更新 ${new Date(row.updatedAt).toLocaleString('zh-CN',{hour12:false})}</span></div><button data-show-versions="${row.id}">版本历史</button></div><div class="caseVersionList hidden" data-version-list="${row.id}"></div></article>`).join('');
+      box.querySelectorAll('[data-show-versions]').forEach(b=>b.onclick=async()=>{const host=box.querySelector(`[data-version-list="${b.dataset.showVersions}"]`);if(!host)return;const opening=host.classList.contains('hidden');host.classList.toggle('hidden');if(opening)await renderCaseVersions(b.dataset.showVersions,host)});
+    }catch(err){box.textContent='历史案例读取失败：'+err.message}
+  }
 
   function selectedDrawing(){const d=api.selectedDrawing();return d?clone(d):null}
   function ensureCase(sourceTf){
@@ -144,11 +202,13 @@ export function initStructureCaseLab(api){
     }else if(d.type==='horizontal'){
       sc.horizontal={id:d.id,sourceTf:d.timeframe,type:'horizontal',price:Number(d.price)};
     }else return;
-    putCase(sc);c=sc;renderCase();
+    putCase(sc,'structure_locked');c=sc;renderCase();
   }
-  function resetCase(){
-    if(!confirm('清空当前 Structure Case、候选和区间？主图原始趋势线/水平线不会删除。'))return;
-    c=null;putCase(null);localStorage.removeItem(FEEDBACK);clearMini();api.setEntryMarkers([]);renderCase();
+  async function resetCase(){
+    if(!confirm('归档并清空当前 Structure Case、候选和区间？主图原始趋势线/水平线不会删除。'))return;
+    if(c?.id)await persistResearchNow('case_archived','archived');
+    suppressResearchPersist=true;try{c=null;putCase(null);localStorage.removeItem(FEEDBACK)}finally{suppressResearchPersist=false}
+    clearMini();api.setEntryMarkers([]);renderCase();renderCaseHistory();saveState('当前 Case 已归档；等待建立新 Case。','saved');
   }
   function chartX(t){return api.chart()?.timeScale().timeToCoordinate(Number(t))}
   function paintOverlay(el,z,temp=false){
@@ -193,7 +253,7 @@ export function initStructureCaseLab(api){
         if(zone.start>=zone.end){alert('理想买点区间必须与 Entry Research Zone 重叠。');}
         else{c.idealZone=zone;$('#caseStatus').textContent=`Ideal Entry Zone 已在 ${TF_LABEL[zone.selectedOnTf]} 选择。`}
       }
-      putCase(c);
+      putCase(c,mode==='entry'?'entry_zone_changed':'ideal_zone_changed');
     }
     zA=zB=null;renderCase();clearMini();
   }
@@ -267,6 +327,7 @@ export function initStructureCaseLab(api){
   }
   async function scan(){
     if(!c?.trendline||!c?.horizontal||!c?.zone){alert('需要锁定趋势线、水平线并选择 Entry Research Zone。');return}
+    await persistResearchNow('pre_scan');
     $('#scanCaseEntries').disabled=true;$('#caseStatus').textContent='准备低周期数据…';
     try{
       const {tfs,ctx}=await prepareRows();showMiniFromCache();worker?.terminate();
@@ -276,8 +337,9 @@ export function initStructureCaseLab(api){
         if(m.type==='PROGRESS')$('#caseStatus').textContent=`Web Worker 扫描 ${TF_LABEL[m.timeframe]} · ${m.done+1}/${m.total}`;
         if(m.type==='ERROR'){$('#caseStatus').textContent='扫描失败：'+m.message;$('#scanCaseEntries').disabled=false}
         if(m.type==='DONE'){
-          const oldFb=getFeedback(),all=m.results.flatMap(x=>x.candidates||[]);c.candidates=all;putCase(c);
-          const ids=new Set(all.map(x=>x.id)),nf={};for(const[k,v]of Object.entries(oldFb))if(ids.has(k))nf[k]=v;putFeedback(nf);
+          const oldFb=getFeedback(),all=m.results.flatMap(x=>x.candidates||[]);c.candidates=all;putCase(c,'scan_complete');
+          const ids=new Set(all.map(x=>x.id)),nf={};for(const[k,v]of Object.entries(oldFb))if(ids.has(k))nf[k]=v;putFeedback(nf,'scan_feedback_reconciled');
+          persistResearchNow('scan_complete');
           explanation=explainCase(all,binaryFeedback());idealExplanation=explainIdealZone(all,c.idealZone);
           $('#caseStatus').textContent=`扫描完成：${all.length} 个候选；${c.idealZone?idealHitCount()+' 个命中理想区间。':'尚未设置理想区间。'}`;
           renderCase();showMiniFromCache();$('#scanCaseEntries').disabled=false;
@@ -302,10 +364,10 @@ export function initStructureCaseLab(api){
     return {all,j:all[id]};
   }
   function setQuickJudgement(id,value){
-    const {all,j}=ensureJudgement(id);j.judgement=value;j.updatedAt=new Date().toISOString();putFeedback(all);
+    const {all,j}=ensureJudgement(id);j.judgement=value;j.updatedAt=new Date().toISOString();putFeedback(all,'quick_judgement');
     explanation=explainCase(c.candidates||[],binaryFeedback());renderCase();showMiniFromCache();
   }
-  function saveDetailedJudgement(id,root){
+  function saveDetailedJudgement(id,root,{rerender=true,reason='detailed_judgement'}={}){
     const {all,j}=ensureJudgement(id);
     j.confidence=Number(root.querySelector('[data-field="confidence"]')?.value||50);
     j.executionTf=root.querySelector('[data-field="executionTf"]')?.value||'5m';
@@ -314,8 +376,13 @@ export function initStructureCaseLab(api){
     j.support=[...root.querySelectorAll('[data-group="support"]:checked')].map(x=>x.value);
     j.veto=[...root.querySelectorAll('[data-group="veto"]:checked')].map(x=>x.value);
     j.needs=[...root.querySelectorAll('[data-group="needs"]:checked')].map(x=>x.value);
-    j.updatedAt=new Date().toISOString();putFeedback(all);
-    explanation=explainCase(c.candidates||[],binaryFeedback());renderCase();showMiniFromCache();
+    j.updatedAt=new Date().toISOString();putFeedback(all,reason);
+    explanation=explainCase(c.candidates||[],binaryFeedback());if(rerender){renderCase();showMiniFromCache()}
+  }
+  function scheduleDetailedAutosave(id,root){
+    if(detailAutoSaveTimers.has(id))clearTimeout(detailAutoSaveTimers.get(id));
+    saveState('研究记录：详细判断等待自动保存…','pending');
+    detailAutoSaveTimers.set(id,setTimeout(()=>{detailAutoSaveTimers.delete(id);saveDetailedJudgement(id,root,{rerender:false,reason:'detailed_judgement_autosave'})},500));
   }
 
   function checkGroup(title,group,options,selected=[]){
@@ -349,7 +416,7 @@ export function initStructureCaseLab(api){
         ${checkGroup('主要支持理由','support',SUPPORT_OPTIONS,j?.support||[])}
         ${checkGroup('主要否决理由','veto',VETO_OPTIONS,j?.veto||[])}
         ${checkGroup('如果等待，还缺什么确认','needs',NEED_OPTIONS,j?.needs||[])}
-        <button class="saveJudge">保存详细判断</button>
+        <button class="saveJudge">立即保存并刷新详情</button><span class="autoSaveHint">输入后约 500ms 自动保存</span>
       </div>
     </div>`;
   }
@@ -525,9 +592,12 @@ export function initStructureCaseLab(api){
       const exp=el.querySelector('[data-expand-judge]');
       if(exp)exp.onclick=e=>{e.stopPropagation();el.querySelector('.judgeExpand')?.classList.toggle('hidden')};
       const slider=el.querySelector('[data-field="confidence"]'),val=el.querySelector('.confidenceValue');
-      if(slider&&val)slider.oninput=()=>val.textContent=slider.value;
+      if(slider&&val)slider.oninput=()=>{val.textContent=slider.value;scheduleDetailedAutosave(id,el)};
+      el.querySelectorAll('[data-field="executionTf"],[data-field="invalidation"],[data-field="note"],[data-group]').forEach(input=>{
+        const ev=(input.matches('textarea')||input.dataset.field==='invalidation')?'input':'change';input.addEventListener(ev,()=>scheduleDetailedAutosave(id,el));
+      });
       const save=el.querySelector('.saveJudge');
-      if(save)save.onclick=e=>{e.stopPropagation();saveDetailedJudgement(id,el);renderSelectedDetail(x)};
+      if(save)save.onclick=e=>{e.stopPropagation();saveDetailedJudgement(id,el,{reason:'manual_judgement_checkpoint'});renderSelectedDetail(x)};
     });
     renderTimeline();
   }
@@ -571,8 +641,8 @@ export function initStructureCaseLab(api){
     $('#caseDraft').textContent=JSON.stringify(d,null,2);
     renderDraftExplanation(d);
     let arr=[];try{arr=JSON.parse(localStorage.getItem(DRAFTS)||'[]')}catch{}
-    arr.push({...d,tradeJudgements:getFeedback(),createdAt:new Date().toISOString()});
-    localStorage.setItem(DRAFTS,JSON.stringify(arr));
+    const savedDraft={...d,caseId:c.id,tradeJudgements:getFeedback(),createdAt:new Date().toISOString()};
+    arr.push(savedDraft);localStorage.setItem(DRAFTS,JSON.stringify(arr));lastDraft=savedDraft;persistResearchNow('draft_generated','active',savedDraft);
   }
   function dataChanged(){renderCase()}
   function chartRebuilt(){renderCase();try{api.chart()?.timeScale().subscribeVisibleTimeRangeChange(()=>renderOverlays())}catch{}}
@@ -580,8 +650,9 @@ export function initStructureCaseLab(api){
 
   $('#lockSelectedStructure').onclick=lockSelected;$('#resetStructureCase').onclick=resetCase;
   $('#selectCaseZone').onclick=()=>beginSelection('entry');$('#selectIdealZone').onclick=()=>beginSelection('ideal');
-  $('#clearIdealZone').onclick=()=>{if(c){c.idealZone=null;putCase(c);renderCase();showMiniFromCache()}};
+  $('#clearIdealZone').onclick=()=>{if(c){c.idealZone=null;putCase(c,'ideal_zone_cleared');renderCase();showMiniFromCache()}};
   $('#scanCaseEntries').onclick=scan;$('#generateCaseDraft').onclick=generateDraft;
+  $('#refreshCaseHistory').onclick=renderCaseHistory;
   document.querySelectorAll('.researchTab').forEach(b=>b.onclick=()=>{
     document.querySelectorAll('.researchTab').forEach(x=>x.classList.remove('active'));
     document.querySelectorAll('.researchTabPanel').forEach(x=>x.classList.add('hidden'));
@@ -596,6 +667,13 @@ export function initStructureCaseLab(api){
   });
 
   window.addEventListener('keydown',e=>{if(e.key==='Escape'&&selectionMode){selectionMode=null;drag=false;chartEl.classList.remove('zoneSelectActive');zA=zB=null;renderOverlays()}});
+  (async()=>{
+    try{
+      let drafts=[];try{drafts=JSON.parse(localStorage.getItem(DRAFTS)||'[]')}catch{}
+      await migrateLegacyStructureCaseResearch({caseData:c,feedback:getFeedback(),drafts});await renderCaseHistory();
+      if(c?.id)await persistResearchNow('session_open');else saveState('研究记录：等待建立 Structure Case。','saved');
+    }catch(err){saveState('Research Ledger 初始化失败：'+err.message,'error')}
+  })();
   renderCase();
   return {dataChanged,chartRebuilt,refresh,case:()=>c};
 }

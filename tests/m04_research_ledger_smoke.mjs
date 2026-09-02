@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+const read=p=>fs.readFileSync(p,'utf8');
+const lab=read('src/structure_case_lab.js'),store=read('src/research_storage.js'),foundation=read('src/data_foundation_v10.js'),html=read('index.html'),css=read('src/style.css');
+const ok=(v,m)=>{if(!v)throw new Error(m)};
+for(const x of ['saveStructureCaseResearch','listStructureCases','listStructureCaseVersions','getStructureCaseVersion','migrateLegacyStructureCaseResearch'])ok(store.includes(`function ${x}`),`research storage missing ${x}`);
+ok(store.includes('indexedDB.open(DB_NAME,DB_VERSION)'),'IndexedDB primary storage missing');
+for(const x of ['saveStructureCaseResearch','listStructureCases','listStructureCaseVersions','getStructureCaseVersion','migrateLegacyStructureCaseResearch'])ok(foundation.includes(x),`F01 does not re-export ${x}`);
+for(const x of ['caseAutoSaveStatus','caseHistoryList','refreshCaseHistory'])ok(html.includes(`id="${x}"`),`M04 UI missing ${x}`);
+ok(css.includes('.caseAutoSaveStatus'),'autosave status CSS missing');ok(css.includes('.caseHistoryPanel'),'case history CSS missing');
+for(const x of ['scheduleResearchSave','persistResearchNow','renderCaseHistory','restoreResearchVersion','scheduleDetailedAutosave'])ok(lab.includes(x),`M04 ledger integration missing ${x}`);
+ok(lab.includes("persistResearchNow('pre_scan'"),'pre-scan checkpoint missing');ok(lab.includes("persistResearchNow('scan_complete'"),'scan-complete checkpoint missing');ok(lab.includes("persistResearchNow('case_archived'"),'archive-before-reset missing');ok(lab.includes('detailAutoSaveTimers'),'detailed judgement autosave missing');
+console.log('M04_RESEARCH_LEDGER_SMOKE_OK');

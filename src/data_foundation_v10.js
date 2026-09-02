@@ -1,4 +1,4 @@
-﻿import {loadIndex as legacyLoadIndex,loadMonths as legacyLoadMonths,loadContexts as legacyLoadContexts} from './data.js';
+import {loadIndex as legacyLoadIndex,loadMonths as legacyLoadMonths,loadContexts as legacyLoadContexts} from './data.js';
 
 const BASE=`${import.meta.env.BASE_URL}data/v10/`;
 let manifestPromise=null;
@@ -81,3 +81,5 @@ export function updateHumanLabel(id,patch){
 export function removeHumanLabel(id){
   const v=getHumanLabels().filter(x=>x.id!==id);setHumanLabels(v);return v;
 }
+
+export {saveStructureCaseResearch,listStructureCases,listStructureCaseVersions,getStructureCaseVersion,archiveStructureCaseResearch,migrateLegacyStructureCaseResearch} from './research_storage.js';
