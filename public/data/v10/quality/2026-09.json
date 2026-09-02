@@ -2,10 +2,10 @@
   "month": "2026-09",
   "error": "NO_KLINE_SOURCE_DATA",
   "kline_1m": {
-    "expected": 205,
+    "expected": 1644,
     "rows": 0,
     "coverage": 0.0,
-    "missing": 205
+    "missing": 1644
   },
   "source_coverage": {},
   "sources": {
