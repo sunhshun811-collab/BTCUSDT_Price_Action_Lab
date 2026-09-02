@@ -1,0 +1,21 @@
+import fs from 'node:fs';
+const r=p=>fs.readFileSync(p,'utf8');
+const index=r('index.html'),main=r('src/main.js'),ann=r('src/annotations.js'),f01=r('src/data_foundation_v10.js'),layout=r('src/module_layout.js'),readme=r('README.md');
+const ok=(x,m)=>{if(!x)throw new Error(m)};
+
+for(const x of ['data-mode="overview"','data-mode="labels"','id="overviewView"','id="labelsView"'])ok(!index.includes(x),`retired UI remains: ${x}`);
+for(const x of ['id="humanLabelManager"','id="exportLabels"','id="exportDrawings"'])ok(index.includes(x),`migrated control missing: ${x}`);
+for(const x of ['overviewCharts','renderOverview','function miniChart','renderLabelsTable','getLabels()','addLabel('])ok(!main.includes(x),`retired main.js logic remains: ${x}`);
+for(const x of ['getHumanLabels','addHumanLabel','updateHumanLabel','removeHumanLabel','renderHumanLabelsTable','installModuleLayout'])ok(main.includes(x),`main integration missing: ${x}`);
+ok(!ann.includes('LABEL_KEY'),'annotations.js still owns label persistence');
+ok(!ann.includes('getLabels'),'annotations.js still exports getLabels');
+ok(!ann.includes('addLabel'),'annotations.js still exports addLabel');
+for(const x of ['HUMAN_LABEL_KEY','getHumanLabels','addHumanLabel','updateHumanLabel','removeHumanLabel'])ok(f01.includes(x),`F01 missing ${x}`);
+for(const id of ['M01','M02','M03','M04','M05','M06'])ok(layout.includes(`id:'${id}'`),`layout missing ${id}`);
+for(const id of ['M07','M08','M09'])ok(!layout.includes(`id:'${id}'`),`old id remains ${id}`);
+ok(layout.includes("id:'M04',title:'Structure Case'"),'M04 mapping incorrect');
+ok(layout.includes("id:'M05',title:'永续衍生品上下文'"),'M05 mapping incorrect');
+ok(layout.includes("id:'M06',title:'Blind Replay'"),'M06 mapping incorrect');
+ok(!readme.includes('**功能树：**'),'README function-tree link remains');
+for(const x of ['M04 — Structure Case 条件化买点研究','M05 — 永续衍生品上下文','M06 — Blind Replay 盲测研究'])ok(readme.includes(x),`README mapping missing: ${x}`);
+console.log('MODULE_ARCHITECTURE_FINAL_SMOKE_OK');

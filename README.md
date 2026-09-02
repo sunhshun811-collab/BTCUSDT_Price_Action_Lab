@@ -38,6 +38,21 @@ BTCUSDT Price Action Lab 是一个围绕 BTCUSDT 永续合约构建的 Price Act
 - GitHub Actions 自动构建、数据处理和页面部署。
 - .btcquantjob → VS Code → 测试 → Git → GitHub Actions 自动化工作流。
 
+
+## 正式界面模块
+
+当前可视化工作台的正式编号冻结为 **F01 + M01–M06**：
+
+- **F01 — 共享底层数据层**：Data Foundation V10、K 线、多周期数据、Futures Context、人工标签持久化。
+- **M01 — 主图与市场定位**：K 线、周期、日期范围、成交量、十字光标与 OHLC。
+- **M02 — 图形标注与趋势线**：趋势线、水平位、磁吸、自动校准、锚点管理与趋势线研究。
+- **M03 — 人工判断**：方向、置信度、备注、历史标签管理与标签 JSON 导出。
+- **M04 — Structure Case 条件化买点研究**：母结构、Entry Zone、低周期扫描、候选判断、买点阶梯与当前案例规则草案。
+- **M05 — 永续衍生品上下文**：Funding、OI、Basis、Positioning、主动买卖与主图联动。
+- **M06 — Blind Replay 盲测研究**：冻结未来、六周期因果快照、决策、Veto、Feature Snapshot、MFE / MAE 与相似案例。
+
+原“六周期同步总览”和原“人工教学数据”独立页面已退役；多周期研究由 M01 / M04 / M06 承担，人工标签的操作归 M03、底层持久化归 F01。后续新增模块从 M07 开始，不再因删除旧模块反复重编号。
+
 ## 数据与周期
 
 当前主要研究对象：
@@ -208,6 +223,7 @@ tools/btcquant_launcher/
 ## 风险说明
 
 本项目用于研究、可视化和策略实验，不构成投资建议。任何交易决策都应自行评估风险。
+
 
 
 

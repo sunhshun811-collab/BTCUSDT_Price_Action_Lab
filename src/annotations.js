@@ -1,6 +1,5 @@
-
+﻿
 const DRAW_KEY='priceActionLab.drawings.v1';
-const LABEL_KEY='priceActionLab.labels.v1';
 const TF_RANK={'8h':0,'4h':1,'1h':2,'15m':3,'5m':4,'1m':5};
 
 export function getDrawings(){try{return JSON.parse(localStorage.getItem(DRAW_KEY)||'[]')}catch{return[]}}
@@ -33,10 +32,9 @@ export function confirmedResearchTrendlines(tf=null,causalOnly=false,decisionTim
 export function undoDrawing(tf){const v=getDrawings();for(let i=v.length-1;i>=0;i--){if(v[i].timeframe===tf){v.splice(i,1);break}}setDrawings(v);return v}
 export function clearDrawings(tf){const v=getDrawings().filter(x=>x.timeframe!==tf);setDrawings(v);return v}
 
-export function getLabels(){try{return JSON.parse(localStorage.getItem(LABEL_KEY)||'[]')}catch{return[]}}
-export function addLabel(x){const v=getLabels();v.push(x);localStorage.setItem(LABEL_KEY,JSON.stringify(v));return v}
 
 export function downloadJson(name,data){
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href);
 }
+

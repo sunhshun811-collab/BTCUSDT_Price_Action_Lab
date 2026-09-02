@@ -13,10 +13,8 @@
   <div class="badges"><span>北京时间 UTC+8</span><span>红涨绿跌</span><span>交互式研究</span><span>非实盘下单</span></div>
 </header>
 <nav class="modebar">
-  <button class="mode active" data-mode="editor">主图编辑</button>
-  <button class="mode" data-mode="overview">六周期总览</button>
-  <button class="mode" data-mode="labels">人工教学数据</button>
-  <button class="mode" data-mode="research">策略开发室</button>
+  <button class="mode active" data-mode="editor">M01–M05 研究工作台</button>
+  <button class="mode" data-mode="research">M06 Blind Replay</button>
 </nav>
 <main>
 <section id="editorView">
@@ -66,6 +64,7 @@
   </div>
   <label class="check"><input id="showHigherTfTrendlines" type="checkbox" checked> 显示高周期趋势线</label>
   <div id="drawingInfo" class="infoBox">选择“趋势线”后，按住鼠标大概拖出方向即可；无需点准真实顶点/低点。</div>
+  <button id="exportDrawings" class="tool wide">导出趋势线 JSON</button>
   <div id="trendCalibrationPanel" class="calibrationPanel hidden">
     <div id="calibrationSummary"></div>
     <div class="calibrationActions">
@@ -88,6 +87,16 @@
   </div>
   <textarea id="labelNote" rows="3" placeholder="可选：为什么这个位置明显？"></textarea>
   <button id="saveLabel" class="primary">保存这个判断</button>
+  <details id="humanLabelManager" class="humanLabelManager">
+    <summary>人工判断历史与数据</summary>
+    <div class="humanLabelBody">
+      <div class="humanLabelActions">
+        <span id="labelStats">累计 0 个判断标签。</span>
+        <button id="exportLabels" class="primary">导出标签 JSON</button>
+      </div>
+      <div class="humanLabelTableWrap"><table id="labelsTable"></table></div>
+    </div>
+  </details>
 </aside>
 
 <section class="mainArea">
@@ -282,22 +291,11 @@
 </div>
 </section>
 
-<section id="overviewView" class="hidden">
-  <div class="panel overviewHeader"><div><strong>六周期同步总览</strong><span id="overviewRangeText">使用左上角同一全局日期范围，全部 K 线完整显示</span></div></div>
-  <div id="overviewGrid" class="overviewGrid"></div>
-</section>
-
-<section id="labelsView" class="hidden">
-  <div class="panel labelsPanel">
-    <div class="sectionHead"><div><h3>人工教学数据</h3><span>把你的“盘感”保存成可学习标签。</span></div>
-      <div><button id="exportLabels" class="primary">导出标签 JSON</button><button id="exportDrawings">导出趋势线 JSON</button></div></div>
-    <div id="labelStats"></div><div class="tableWrap"><table id="labelsTable"></table></div>
-  </div>
-</section>
 </main>
 <footer><span>BTCUSDT Price Action Lab · 研究用途，不构成交易建议。</span><span>Charts powered by <a href="https://www.tradingview.com/" target="_blank" rel="noreferrer">TradingView Lightweight Charts™</a>.</span></footer>
 </div>
 <script type="module" src="/src/main.js"></script>
 </body>
 </html>
+
 

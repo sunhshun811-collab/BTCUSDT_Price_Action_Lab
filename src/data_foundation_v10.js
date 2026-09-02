@@ -1,4 +1,4 @@
-import {loadIndex as legacyLoadIndex,loadMonths as legacyLoadMonths,loadContexts as legacyLoadContexts} from './data.js';
+﻿import {loadIndex as legacyLoadIndex,loadMonths as legacyLoadMonths,loadContexts as legacyLoadContexts} from './data.js';
 
 const BASE=`${import.meta.env.BASE_URL}data/v10/`;
 let manifestPromise=null;
@@ -62,3 +62,22 @@ export async function loadContextsSmart(months,chartTf='5m'){
   out.sort((a,b)=>a.time-b.time);return{rows:out,foundationVersion:m.version,revision:m.revision,resolution:res};
 }
 export async function foundationStatus(){const m=await fetchManifest();return m?{available:true,version:m.version,revision:m.revision,quality:m.quality}: {available:false}}
+const HUMAN_LABEL_KEY='priceActionLab.labels.v1';
+export function getHumanLabels(){
+  try{return JSON.parse(localStorage.getItem(HUMAN_LABEL_KEY)||'[]')}catch{return[]}
+}
+export function setHumanLabels(v){
+  localStorage.setItem(HUMAN_LABEL_KEY,JSON.stringify(Array.isArray(v)?v:[]));
+  return getHumanLabels();
+}
+export function addHumanLabel(x){
+  const v=getHumanLabels();v.push(x);setHumanLabels(v);return v;
+}
+export function updateHumanLabel(id,patch){
+  const v=getHumanLabels(),i=v.findIndex(x=>x.id===id);
+  if(i>=0){v[i]={...v[i],...patch,updated_at_utc:new Date().toISOString()};setHumanLabels(v)}
+  return v;
+}
+export function removeHumanLabel(id){
+  const v=getHumanLabels().filter(x=>x.id!==id);setHumanLabels(v);return v;
+}

@@ -3,9 +3,9 @@ import './style.css';
 import {installModuleLayout} from './module_layout.js';
 import {createChart,CandlestickSeries,HistogramSeries,LineSeries,createSeriesMarkers,CrosshairMode} from 'lightweight-charts';
 import {toCandleRows,toVolumeRows} from './data.js';
-import {loadIndexSmart as loadIndex,loadMonthsSmart as loadMonths,loadContextsSmart as loadContexts,foundationStatus} from './data_foundation_v10.js';
+import {loadIndexSmart as loadIndex,loadMonthsSmart as loadMonths,loadContextsSmart as loadContexts,foundationStatus,getHumanLabels,addHumanLabel,updateHumanLabel,removeHumanLabel} from './data_foundation_v10.js';
 import {setContextData,renderContextAt} from './context.js';
-import {getDrawings,addDrawing,updateDrawing,removeDrawing,drawingsFor,drawingsForView,undoDrawing,clearDrawings,getLabels,addLabel,downloadJson} from './annotations.js';
+import {getDrawings,addDrawing,updateDrawing,removeDrawing,drawingsFor,drawingsForView,undoDrawing,clearDrawings,downloadJson} from './annotations.js';
 import {analyzeTrendline} from './trendline_research.js';
 import {createTrendDrawingEngine} from './drawing_engine.js';
 import {initResearchUI,researchDataChanged} from './research_ui.js';
@@ -24,8 +24,6 @@ let lineSeries=[],priceLines=[],previewLine=null,rowMap=new Map(),structureSnaps
 let researchReplayState={active:false,decisionTime:null,futureRevealed:false};
 let drawingEngine=null,structureEntryLab=null;
 let entryCandidateMarkers=[];
-const overviewCharts=[];
-
 function chartOptions(){
   return {
     autoSize:true,layout:{background:{color:'#09121c'},textColor:'#91a5b9',attributionLogo:true},
@@ -276,7 +274,7 @@ async function refreshTrendInspector(d){
 
 function humanMarkers(){
   const map={'2':['arrowUp','#ef5350','强多'],'1':['arrowUp','#f28a87','偏多'],'0':['circle','#9aa9b7','观望'],'-1':['arrowDown','#69bdb4','偏空'],'-2':['arrowDown','#26a69a','强空']};
-  return getLabels().filter(x=>x.timeframe===currentTF).map(x=>{const [shape,color,text]=map[x.label];return{time:x.time,position:x.label>0?'belowBar':x.label<0?'aboveBar':'inBar',shape,color,text:`${text} ${x.confidence}`}})
+  return getHumanLabels().filter(x=>x.timeframe===currentTF).map(x=>{const [shape,color,text]=map[x.label];return{time:x.time,position:x.label>0?'belowBar':x.label<0?'aboveBar':'inBar',shape,color,text:`${text} ${x.confidence}`}})
 }
 function renderHumanMarkers(){
   if(markerApi)markerApi.setMarkers([...humanMarkers(),...entryCandidateMarkers].sort((a,b)=>a.time-b.time));
@@ -310,39 +308,34 @@ async function loadGlobalRange(label='全局日期范围'){
 }
 function saveHumanLabel(){
   if(!selectedPoint){alert('先在K线上点击一个位置。');return}const pending=Number(document.body.dataset.pendingLabel||999);if(pending===999){alert('先选择人工判断。');return}
-  addLabel({id:crypto.randomUUID(),symbol:'BTCUSDT',market:'Binance USD-M Perpetual',timeframe:currentTF,time:selectedPoint.time,beijing_time:fmtBJ(selectedPoint.time,true),price:selectedPoint.price,label:pending,confidence:Number($('#confidence').value),note:$('#labelNote').value.trim(),created_at_utc:new Date().toISOString()});
-  $('#labelNote').value='';delete document.body.dataset.pendingLabel;renderHumanMarkers();renderLabelsTable();
+  addHumanLabel({id:crypto.randomUUID(),symbol:'BTCUSDT',market:'Binance USD-M Perpetual',timeframe:currentTF,time:selectedPoint.time,beijing_time:fmtBJ(selectedPoint.time,true),price:selectedPoint.price,label:pending,confidence:Number($('#confidence').value),note:$('#labelNote').value.trim(),created_at_utc:new Date().toISOString()});
+  $('#labelNote').value='';delete document.body.dataset.pendingLabel;renderHumanMarkers();renderHumanLabelsTable();
 }
 function switchMode(mode){
   $$('.mode').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
-  const editorMode=mode==='editor'||mode==='research';
-  $('#editorView').classList.toggle('hidden',!editorMode);$('#overviewView').classList.toggle('hidden',mode!=='overview');$('#labelsView').classList.toggle('hidden',mode!=='labels');
-  if(mode==='overview')renderOverview();if(mode==='labels')renderLabelsTable();
+  $('#editorView').classList.remove('hidden');
   if(mode==='research')setTimeout(()=>$('#researchPanel')?.scrollIntoView({behavior:'smooth',block:'start'}),60);
 }
-async function miniChart(tf,container,from,to){
-  const months=monthsCoveringTf(tf,from,to);
-  if(!months.length){container.innerHTML=`<div class="miniTitle">${TF_LABEL[tf]} · 所选日期无数据</div>`;return}
-  const all=await loadMonths(tf,months),rows=all.filter(r=>r[0]>=from&&r[0]<to);
-  const c=createChart(container,chartOptions()),s=c.addSeries(CandlestickSeries,candleOptions());
-  s.setData(toCandleRows(rows));c.timeScale().fitContent();overviewCharts.push(c);
-  const t=document.createElement('div');t.className='miniCount';t.textContent=`${rows.length.toLocaleString()} 根`;container.appendChild(t);
+function escHtml(v){
+  return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-async function renderOverview(){
-  overviewCharts.splice(0).forEach(c=>c.remove());
-  const grid=$('#overviewGrid');grid.innerHTML='';
-  const from=globalFrom(),to=globalTo();
-  $('#overviewRangeText').textContent=`${globalRange.startDate} → ${globalRange.endDate} · 六周期完整K线`;
-  for(const tf of ['8h','4h','1h','15m','5m','1m']){
-    const box=document.createElement('div');box.className='panel miniPanel';
-    box.innerHTML=`<div class="miniTitle">${TF_LABEL[tf]}</div><div class="miniChart"></div>`;
-    grid.appendChild(box);
-    miniChart(tf,box.querySelector('.miniChart'),from,to).catch(e=>box.querySelector('.miniChart').innerHTML=`<div class="miniTitle">加载失败 ${e.message}</div>`);
+function renderHumanLabelsTable(){
+  const v=getHumanLabels().sort((a,b)=>b.time-a.time),map={2:'强烈做多',1:'偏多',0:'不交易','-1':'偏空','-2':'强烈做空'};
+  $('#labelStats').textContent=`累计 ${v.length} 个判断标签。`;
+  $('#labelsTable').innerHTML='<thead><tr><th>北京时间</th><th>周期</th><th>判断</th><th>置信度</th><th>价格</th><th>备注</th><th>操作</th></tr></thead><tbody>'+
+    v.map(x=>`<tr data-label-id="${escHtml(x.id)}"><td>${escHtml(x.beijing_time)}</td><td>${escHtml(TF_LABEL[x.timeframe]||x.timeframe)}</td><td>${escHtml(map[x.label]??x.label)}</td><td>${escHtml(x.confidence)}</td><td>${num(x.price)}</td><td><input class="labelNoteEdit" value="${escHtml(x.note||'')}"></td><td><div class="labelRowActions"><button data-label-action="save-note">保存备注</button><button class="danger" data-label-action="delete">删除</button></div></td></tr>`).join('')+'</tbody>';
+}
+function handleHumanLabelAction(e){
+  const btn=e.target.closest('button[data-label-action]');if(!btn)return;
+  const row=btn.closest('tr[data-label-id]');if(!row)return;
+  const id=row.dataset.labelId,action=btn.dataset.labelAction;
+  if(action==='save-note'){
+    updateHumanLabel(id,{note:row.querySelector('.labelNoteEdit')?.value.trim()||''});
+    renderHumanLabelsTable();return;
   }
-}
-function renderLabelsTable(){
-  const v=getLabels().sort((a,b)=>b.time-a.time),map={2:'强烈做多',1:'偏多',0:'不交易','-1':'偏空','-2':'强烈做空'};
-  $('#labelStats').textContent=`累计 ${v.length} 个判断标签。`;$('#labelsTable').innerHTML='<thead><tr><th>北京时间</th><th>周期</th><th>判断</th><th>置信度</th><th>价格</th><th>备注</th></tr></thead><tbody>'+v.map(x=>`<tr><td>${x.beijing_time}</td><td>${TF_LABEL[x.timeframe]}</td><td>${map[x.label]}</td><td>${x.confidence}</td><td>${num(x.price)}</td><td>${x.note||''}</td></tr>`).join('')+'</tbody>'
+  if(action==='delete'&&confirm('删除这个人工判断标签？')){
+    removeHumanLabel(id);renderHumanMarkers();renderHumanLabelsTable();
+  }
 }
 async function init(){
   installModuleLayout();
@@ -372,7 +365,7 @@ async function init(){
   $('#applyCustomRange').onclick=async()=>{
     const a=$('#customStart').value,b=$('#customEnd').value;if(!a||!b)return;
     if(a>b){alert('开始日期不能晚于结束日期。');return}
-    setGlobalRange(a,b);await loadGlobalRange();if(!$('#overviewView').classList.contains('hidden'))renderOverview();
+    setGlobalRange(a,b);await loadGlobalRange();
   };
   $('#toolSelect').onclick=()=>setTool('select');$('#toolTrend').onclick=()=>setTool('trend');$('#toolHorizontal').onclick=()=>setTool('horizontal');
   $('#acceptCalibratedLine').onclick=()=>drawingEngine?.accept();
@@ -402,7 +395,7 @@ async function init(){
   $('#confidence').oninput=()=>$('#confidenceText').textContent=$('#confidence').value;
   $$('.labelGrid button').forEach(b=>b.onclick=()=>{document.body.dataset.pendingLabel=b.dataset.label;$$('.labelGrid button').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
   $('#saveLabel').onclick=saveHumanLabel;
-  $('#exportLabels').onclick=()=>downloadJson('price_action_human_labels.json',getLabels());$('#exportDrawings').onclick=()=>downloadJson('price_action_drawings.json',getDrawings());
+  $('#exportLabels').onclick=()=>downloadJson('price_action_human_labels.json',getHumanLabels());$('#exportDrawings').onclick=()=>downloadJson('price_action_drawings.json',getDrawings());$('#labelsTable').onclick=handleHumanLabelAction;
   $$('.mode').forEach(b=>b.onclick=()=>switchMode(b.dataset.mode));
   initResearchUI({
     indexData:()=>indexData,
@@ -422,8 +415,9 @@ async function init(){
     chartWrap:()=>$('#chartWrap'),
     setEntryMarkers:setEntryCandidateMarkers
   });
-  await loadGlobalRange();renderLabelsTable();
+  await loadGlobalRange();renderHumanLabelsTable();
 }
 init().catch(e=>{document.body.innerHTML=`<pre style="color:white;padding:20px">启动失败：${e.stack||e}</pre>`});
+
 
 
