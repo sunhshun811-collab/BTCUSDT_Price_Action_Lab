@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
@@ -277,18 +277,7 @@
     </div>
   </div>
 
-  <div class="panel strategyPanel">
-    <div class="sectionHead">
-      <div><h3>策略草稿台</h3><span>交互式探索，不是正式 OOS 回测</span></div><button id="runPreview" class="primary">运行当前图形评分预览</button>
-    </div>
-    <div class="strategyControls">
-      <label>趋势/均线权重 <input id="wTrend" type="range" min="0" max="3" step=".1" value="1.2"><b id="vTrend">1.2</b></label>
-      <label>前高/前低突破权重 <input id="wBreakout" type="range" min="0" max="3" step=".1" value="1.5"><b id="vBreakout">1.5</b></label>
-      <label>成交量确认权重 <input id="wVolume" type="range" min="0" max="3" step=".1" value=".8"><b id="vVolume">0.8</b></label>
-      <label>交易置信阈值 <input id="scoreThreshold" type="range" min=".2" max=".95" step=".05" value=".7"><b id="vThreshold">0.70</b></label>
-    </div>
-    <div id="strategyResult" class="strategyResult">点击“运行当前图形评分预览”。</div>
-  </div>
+  
 </section>
 </div>
 </section>
@@ -311,3 +300,4 @@
 <script type="module" src="/src/main.js"></script>
 </body>
 </html>
+

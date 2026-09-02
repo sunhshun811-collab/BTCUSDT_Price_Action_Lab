@@ -1,4 +1,4 @@
-
+﻿
 import './style.css';
 import {createChart,CandlestickSeries,HistogramSeries,LineSeries,createSeriesMarkers,CrosshairMode} from 'lightweight-charts';
 import {toCandleRows,toVolumeRows} from './data.js';
@@ -7,7 +7,6 @@ import {setContextData,renderContextAt} from './context.js';
 import {getDrawings,addDrawing,updateDrawing,removeDrawing,drawingsFor,drawingsForView,undoDrawing,clearDrawings,getLabels,addLabel,downloadJson} from './annotations.js';
 import {analyzeTrendline} from './trendline_research.js';
 import {createTrendDrawingEngine} from './drawing_engine.js';
-import {scoreBars,previewTrades} from './strategy.js';
 import {initResearchUI,researchDataChanged} from './research_ui.js';
 import {initStructureCaseLab} from './structure_case_lab.js';
 
@@ -18,7 +17,7 @@ const fmtBJ=(sec,withSeconds=false)=>new Intl.DateTimeFormat('zh-CN',{timeZone:B
 const tickBJ=sec=>new Intl.DateTimeFormat('zh-CN',{timeZone:BJ,month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(sec*1000));
 const GLOBAL_RANGE_KEY='priceActionLab.globalDateRangeV8';
 
-let indexData,chart,candle,volume,markerApi,previewMarkerApi,currentRows=[],loadedRows=[],baseWindowRows=[],fullContextRows=[],currentTF='8h';
+let indexData,chart,candle,volume,markerApi,currentRows=[],loadedRows=[],baseWindowRows=[],fullContextRows=[],currentTF='8h';
 let tool='select',firstAnchor=null,hoverAnchor=null,selectedPoint=null,selectedDrawingId=null,reanchor=null;
 let lineSeries=[],priceLines=[],previewLine=null,rowMap=new Map(),structureSnaps=[],globalRange=null;
 let researchReplayState={active:false,decisionTime:null,futureRevealed:false};
@@ -85,7 +84,7 @@ function buildMainChart(){
   destroyMain();chart=createChart($('#chart'),chartOptions());
   candle=chart.addSeries(CandlestickSeries,candleOptions());volume=chart.addSeries(HistogramSeries,{priceFormat:{type:'volume'},priceScaleId:''});
   volume.priceScale().applyOptions({scaleMargins:{top:.82,bottom:0}});
-  markerApi=createSeriesMarkers(candle,[]);previewMarkerApi=createSeriesMarkers(candle,[]);
+  markerApi=createSeriesMarkers(candle,[]);
   chart.subscribeCrosshairMove(p=>{
     if(!p.point||!p.time)return;
     const d=p.seriesData.get(candle);if(d)$('#cursorInfo').innerHTML=`北京时间：${fmtBJ(Number(p.time),true)}<br>O ${num(d.open)} · H ${num(d.high)} · L ${num(d.low)} · C ${num(d.close)}`;
@@ -313,14 +312,6 @@ function saveHumanLabel(){
   addLabel({id:crypto.randomUUID(),symbol:'BTCUSDT',market:'Binance USD-M Perpetual',timeframe:currentTF,time:selectedPoint.time,beijing_time:fmtBJ(selectedPoint.time,true),price:selectedPoint.price,label:pending,confidence:Number($('#confidence').value),note:$('#labelNote').value.trim(),created_at_utc:new Date().toISOString()});
   $('#labelNote').value='';delete document.body.dataset.pendingLabel;renderHumanMarkers();renderLabelsTable();
 }
-function bindSliders(){
-  [['wTrend','vTrend'],['wBreakout','vBreakout'],['wVolume','vVolume'],['scoreThreshold','vThreshold']].forEach(([a,b])=>{const el=$('#'+a),o=$('#'+b),f=()=>o.textContent=Number(el.value).toFixed(a==='scoreThreshold'?2:1);el.addEventListener('input',f);f()})
-}
-function runPreview(){
-  if(!currentRows.length)return;const p={wTrend:+$('#wTrend').value,wBreakout:+$('#wBreakout').value,wVolume:+$('#wVolume').value},scores=scoreBars(currentRows,p),th=+$('#scoreThreshold').value,r=previewTrades(scores,th,6);
-  previewMarkerApi.setMarkers(r.events.map(e=>({time:e.time,position:e.side.includes('LONG')?(e.side.startsWith('OPEN')?'belowBar':'aboveBar'):(e.side.startsWith('OPEN')?'aboveBar':'belowBar'),shape:e.side.startsWith('OPEN')?(e.side.endsWith('LONG')?'arrowUp':'arrowDown'):'circle',color:e.side.includes('LONG')?'#ef5350':'#26a69a',text:e.side.replace('_',' ')})));
-  $('#strategyResult').innerHTML=`当前加载窗口预览：开启交易 ${r.trades} 次；简化价格+6bps/side收益 <b class="${r.totalReturn>=0?'positive':'negative'}">${(r.totalReturn*100).toFixed(2)}%</b>。<br>这仍是草稿，不代表正式 Alpha。`;
-}
 function switchMode(mode){
   $$('.mode').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
   const editorMode=mode==='editor'||mode==='research';
@@ -353,7 +344,7 @@ function renderLabelsTable(){
   $('#labelStats').textContent=`累计 ${v.length} 个判断标签。`;$('#labelsTable').innerHTML='<thead><tr><th>北京时间</th><th>周期</th><th>判断</th><th>置信度</th><th>价格</th><th>备注</th></tr></thead><tbody>'+v.map(x=>`<tr><td>${x.beijing_time}</td><td>${TF_LABEL[x.timeframe]}</td><td>${map[x.label]}</td><td>${x.confidence}</td><td>${num(x.price)}</td><td>${x.note||''}</td></tr>`).join('')+'</tbody>'
 }
 async function init(){
-  indexData=await loadIndex();initGlobalRange();bindSliders();
+  indexData=await loadIndex();initGlobalRange();
 
   drawingEngine=createTrendDrawingEngine({
     container:()=>$('#chart'),
@@ -408,7 +399,7 @@ async function init(){
 
   $('#confidence').oninput=()=>$('#confidenceText').textContent=$('#confidence').value;
   $$('.labelGrid button').forEach(b=>b.onclick=()=>{document.body.dataset.pendingLabel=b.dataset.label;$$('.labelGrid button').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
-  $('#saveLabel').onclick=saveHumanLabel;$('#runPreview').onclick=runPreview;
+  $('#saveLabel').onclick=saveHumanLabel;
   $('#exportLabels').onclick=()=>downloadJson('price_action_human_labels.json',getLabels());$('#exportDrawings').onclick=()=>downloadJson('price_action_drawings.json',getDrawings());
   $$('.mode').forEach(b=>b.onclick=()=>switchMode(b.dataset.mode));
   initResearchUI({
@@ -432,3 +423,4 @@ async function init(){
   await loadGlobalRange();renderLabelsTable();
 }
 init().catch(e=>{document.body.innerHTML=`<pre style="color:white;padding:20px">启动失败：${e.stack||e}</pre>`});
+

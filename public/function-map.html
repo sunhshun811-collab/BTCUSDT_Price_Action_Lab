@@ -67,7 +67,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:"Segoe UI"
 <div id="toolbar">
   <div id="title">BTCUSDT Price Action Lab · 功能树</div>
   <div id="tip">按住鼠标左键拖动功能块；空白处按住左键拖动画布；滚轮缩放。</div>
-  <span class="badge">Root + 8 组 + 25 子能力</span>
+  <span class="badge">核心功能概览</span>
   <button class="btn" id="fitBtn">居中适配</button>
   <button class="btn" id="expandBtn">展开布局</button>
   <button class="btn" id="compactBtn">紧凑布局</button>
@@ -117,8 +117,6 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:"Segoe UI"
       body:'Funding\nOI\nBasis\nPositioning\n与主图十字光标联动\nK线与 Futures Metrics 协同观察',tags:['BTC特色','建议保留']},
     {id:'blind',title:'Blind Replay / 策略开发室',icon:'🎯',x:230,y:570,
       body:'随机 Blind Replay\n换一个案例\n抓取当前快照\n显示未来\n市场阶段概率\n六周期因果快照\nVeto / 保存完整研究样本\nMFE / MAE / 相似案例',tags:['二级化候选']},
-    {id:'draft',title:'策略草稿台',icon:'🧪',x:280,y:330,
-      body:'运行当前图形评分预览\n趋势/均线权重\n前高/前低突破权重\n成交量确认权重\n交易置信阈值',tags:['实验性','可隐藏']},
     {id:'system',title:'系统与仓库层能力',icon:'⚙️',x:900,y:210,
       body:'Data Foundation V10\nBinance 公共行情数据接入\nSmoke Tests\nGitHub Actions 构建/部署\n.btcquantjob → VS Code → GitHub',tags:['基础设施']},
     {id:'src',title:'代码模块映射',icon:'🧩',x:700,y:70,
@@ -128,7 +126,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:"Segoe UI"
   const edges = [
     ['root','nav'],['root','chart'],['root','drawing'],['root','manual'],
     ['root','case'],['root','ladder'],['root','deriv'],['root','blind'],
-    ['root','draft'],['root','system'],['root','src'],
+    ['root','system'],['root','src'],
     ['chart','drawing'],['chart','manual'],['case','ladder'],['case','manual'],
     ['blind','manual'],['system','src']
   ];
@@ -325,4 +323,5 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:"Segoe UI"
 </script>
 </body>
 </html>
+
 
