@@ -6,10 +6,8 @@ import {toCandleRows,toVolumeRows} from './data.js';
 import {loadIndexSmart as loadIndex,loadMonthsSmart as loadMonths,loadContextsSmart as loadContexts,foundationStatus,getHumanLabels,addHumanLabel,updateHumanLabel,removeHumanLabel} from './data_foundation_v10.js';
 import {setContextData,renderContextAt} from './context.js';
 import {getDrawings,addDrawing,updateDrawing,removeDrawing,drawingsFor,drawingsForView,undoDrawing,redoDrawing,clearDrawings,duplicateDrawing,downloadJson} from './annotations.js';
-import {analyzeTrendline} from './trendline_research.js';
 import {createTrendDrawingEngine} from './drawing_engine.js';
 import {resolveTrendStyle,resolveHorizontalStyle,newHorizontalStyle} from './drawing_style.js';
-import {initResearchUI,researchDataChanged} from './research_ui.js';
 import {initStructureCaseLab} from './structure_case_lab.js';
 import {addMovingAverages} from './moving_averages.js';
 
@@ -23,8 +21,6 @@ const GLOBAL_RANGE_KEY='priceActionLab.globalDateRangeV8';
 let indexData,chart,candle,volume,markerApi,currentRows=[],loadedRows=[],baseWindowRows=[],fullContextRows=[],currentTF='8h';
 let tool='select',firstAnchor=null,hoverAnchor=null,selectedPoint=null,selectedDrawingId=null,reanchor=null;
 let lineSeries=[],priceLines=[],previewLine=null,rowMap=new Map(),structureSnaps=[],globalRange=null;
-let researchReplayState={active:false,decisionTime:null,futureRevealed:false};
-function blindIsFrozen(){return researchReplayState.active&&!researchReplayState.futureRevealed}
 let drawingEngine=null,structureEntryLab=null;
 let entryCandidateMarkers=[];
 let movingAverages=null;
@@ -175,7 +171,6 @@ async function selectDrawing(id){
 }
 
 function nearestDrawing(point,time){
-  if(blindIsFrozen())return null;
   let best=null,bestPx=Infinity;
   for(const d of drawingsForView(currentTF,$('#showHigherTfTrendlines')?.checked!==false)){
     if(d.type==='horizontal'){
@@ -204,7 +199,6 @@ function handleClick(p){
 }
 function renderDrawings(){
   lineSeries.forEach(x=>chart.removeSeries(x.series));lineSeries=[];priceLines.forEach(p=>candle.removePriceLine(p));priceLines=[];
-  if(blindIsFrozen())return;
   for(const d of drawingsForView(currentTF,$('#showHigherTfTrendlines')?.checked!==false)){
     if(d.type==='horizontal'){
       const style=resolveHorizontalStyle(d);
@@ -241,64 +235,16 @@ function renderCalibrationState(s){
   }
 }
 
-function renderTrendInspector(a){
-  const badge=$('#trendResearchBadge');
-  if(!a){
-    badge.textContent='未选择趋势线';badge.className='trendBadge';
-    $('#trendMetrics').textContent='选择一根趋势线查看质量、生命周期和事件。';$('#trendEvents').textContent='—';return;
-  }
-  const d=getDrawings().find(x=>x.id===a.id);
-  const causal=d?.causalEligible;
-  badge.textContent=d?.researchConfirmed?(causal?'已确认 · 因果可用':'已确认 · 描述用途'):'未纳入研究';
-  badge.className='trendBadge '+(d?.researchConfirmed&&causal?'ok':d?.researchConfirmed?'warn':'');
-  const fmt=x=>x==null||!Number.isFinite(Number(x))?'—':Number(x).toFixed(2);
-  $('#trendMetrics').innerHTML=`<div class="metricGrid">
-    <div class="metricCell"><span>质量评分</span><b>${fmt(a.quality)}</b></div>
-    <div class="metricCell"><span>生命周期</span><b>${a.lifecycle}</b></div>
-    <div class="metricCell"><span>当前距离</span><b>${fmt(a.distanceAtr)} ATR</b></div>
-    <div class="metricCell"><span>当前趋势线价</span><b>${num(a.currentLinePrice)}</b></div>
-    <div class="metricCell"><span>触碰次数</span><b>${a.touchCount}</b></div>
-    <div class="metricCell"><span>实体突破</span><b>${a.bodyBreakCount}</b></div>
-    <div class="metricCell"><span>Wick穿透</span><b>${a.wickBreakCount}</b></div>
-    <div class="metricCell"><span>平均反应</span><b>${fmt(a.avgReactionAtr)} ATR</b></div>
-    <div class="metricCell"><span>存在时间</span><b>${fmt(a.ageDays)} 天</b></div>
-    <div class="metricCell"><span>角色</span><b>${a.role==='support'?'支撑':'阻力'}</b></div>
-    <div class="metricCell"><span>区域宽度</span><b>${fmt(a.zoneAtr)} ATR</b></div>
-    <div class="metricCell"><span>锚点贴合</span><b>${fmt(a.anchorFit*100)}</b></div>
-  </div>`;
-  $('#trendEvents').innerHTML=a.events.length?a.events.slice(-12).reverse().map(e=>{
-    const c=['BODY_BREAK','ACCEPTANCE','FAILED_RETEST'].includes(e.name)?'break':['REJECTION','RECLAIM','FALSE_BREAK'].includes(e.name)?'good':'';
-    return `<span class="eventChip ${c}" title="${fmtBJ(e.time,true)}">${e.name}</span>`;
-  }).join(''):'暂无事件';
-}
-async function refreshTrendInspector(d){
-  if(!d||d.type!=='trend'){renderTrendInspector(null);return}
-  try{
-    let rows=[];
-    if(d.timeframe===currentTF)rows=baseWindowRows.length?baseWindowRows:currentRows;
-    else{
-      const all=indexData?.timeframes?.[d.timeframe]||[];
-      const from=Math.min(d.a.time,d.b.time),to=currentRows.at(-1)?.[0]??from;
-      const months=all.filter(m=>{
-        const [y,mo]=m.split('-').map(Number),a=Date.UTC(y,mo-1,1)/1000,b=Date.UTC(y+(mo===12),mo===12?0:mo,1)/1000;
-        return b>from&&a<=to;
-      });
-      rows=months.length?await loadMonths(d.timeframe,months):[];
-    }
-    renderTrendInspector(analyzeTrendline(d,rows,d.timeframe,null));
-  }catch(e){$('#trendMetrics').textContent='趋势线分析失败：'+e.message}
-}
-
 function humanMarkers(){
   const map={'2':['arrowUp','#ef5350','强多'],'1':['arrowUp','#f28a87','偏多'],'0':['circle','#9aa9b7','观望'],'-1':['arrowDown','#69bdb4','偏空'],'-2':['arrowDown','#26a69a','强空']};
   return getHumanLabels().filter(x=>x.timeframe===currentTF).map(x=>{const [shape,color,text]=map[x.label];return{time:x.time,position:x.label>0?'belowBar':x.label<0?'aboveBar':'inBar',shape,color,text:`${text} ${x.confidence}`}})
 }
 function renderHumanMarkers(){
-  if(markerApi)markerApi.setMarkers(blindIsFrozen()?[]:[...humanMarkers(),...entryCandidateMarkers].sort((a,b)=>a.time-b.time));
+  if(markerApi)markerApi.setMarkers([...humanMarkers(),...entryCandidateMarkers].sort((a,b)=>a.time-b.time));
 }
 function setEntryCandidateMarkers(v){entryCandidateMarkers=(v||[]).slice();renderHumanMarkers()}
 
-function showRowsForResearch(rows,ctxRows){
+function showRows(rows,ctxRows){
   currentRows=rows.slice();
   buildMainChart();
   candle.setData(toCandleRows(currentRows));volume.setData(toVolumeRows(currentRows));rebuildMap();
@@ -314,8 +260,7 @@ async function loadWindow(from,to,label){
   if(!currentRows.length){$('#dataStatus').textContent=' · 范围内无K线';return}
   baseWindowRows=currentRows.slice();
   try{const cx=await loadContexts(months,currentTF);fullContextRows=(cx.rows||[]).slice()}catch(e){console.warn(e);fullContextRows=[]}
-  showRowsForResearch(baseWindowRows,fullContextRows);
-  researchDataChanged();
+  showRows(baseWindowRows,fullContextRows);
   if(structureEntryLab)structureEntryLab.dataChanged();
   $('#rangeHint').textContent=`全局 ${globalRange.startDate} → ${globalRange.endDate} · ${TF_LABEL[currentTF]} · ${currentRows.length.toLocaleString()} 根K线 · ${months.length}个月分片`;
   const fs=await foundationStatus();$('#dataStatus').textContent=` · ${currentRows.length.toLocaleString()} 根K线${fs.available?' · 云端数据V10':' · 兼容旧数据'}`;
@@ -328,11 +273,6 @@ function saveHumanLabel(){
   if(!selectedPoint){alert('先在K线上点击一个位置。');return}const pending=Number(document.body.dataset.pendingLabel||999);if(pending===999){alert('先选择人工判断。');return}
   addHumanLabel({id:crypto.randomUUID(),symbol:'BTCUSDT',market:'Binance USD-M Perpetual',timeframe:currentTF,time:selectedPoint.time,beijing_time:fmtBJ(selectedPoint.time,true),price:selectedPoint.price,label:pending,confidence:Number($('#confidence').value),note:$('#labelNote').value.trim(),created_at_utc:new Date().toISOString()});
   $('#labelNote').value='';delete document.body.dataset.pendingLabel;renderHumanMarkers();renderHumanLabelsTable();
-}
-function switchMode(mode){
-  $$('.mode').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
-  $('#editorView').classList.remove('hidden');
-  if(mode==='research')setTimeout(()=>$('#researchPanel')?.scrollIntoView({behavior:'smooth',block:'start'}),60);
 }
 function escHtml(v){
   return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -381,7 +321,6 @@ async function init(){
     timeframe:()=>currentTF,
     calibrationMode:()=>$('#trendCalibrationMode').value,
     trendMode:()=>$('#trendMode').value,
-    replayState:()=>researchReplayState,
     snapPoint:(time,price,y,opts)=>snapPoint(time,price,y,opts),
     onState:renderCalibrationState,
     onCommit:(d)=>{
@@ -423,25 +362,14 @@ async function init(){
   $('#drawingUseCase').onclick=()=>{if(selectedDrawingId)$('#lockSelectedStructure')?.click()};
   $('#drawingDelete').onclick=deleteSelectedDrawing;
   $('#chartWrap').addEventListener('contextmenu',e=>{
-    if(researchReplayState.active&&!researchReplayState.futureRevealed)return;
     e.preventDefault();const rect=$('#chart').getBoundingClientRect(),y=e.clientY-rect.top;
     const price=candle?.coordinateToPrice(y);if(price==null||!Number.isFinite(Number(price)))return;
     const d={id:crypto.randomUUID(),type:'horizontal',timeframe:currentTF,drawnOnTimeframe:currentTF,price:Number(price),style:newHorizontalStyle(),locked:false,visible:true,geometryRevision:1,styleRevision:1,createdAt:new Date().toISOString()};
     addDrawing(d);renderDrawings();selectDrawing(d.id);
   });
-  window.addEventListener('palab:replay-state',e=>{
-    researchReplayState={...researchReplayState,...(e.detail||{})};
-    document.body.classList.toggle('blindReplayFrozen',blindIsFrozen());
-    if(blindIsFrozen()){
-      drawingEngine?.cancel();setTool('select');reanchor=null;selectedPoint=null;
-      selectDrawing(null);
-    }
-    renderDrawings();renderHumanMarkers();
-  });
   window.addEventListener('keydown',e=>{
     const tag=(document.activeElement?.tagName||'').toLowerCase();
     if(['input','textarea','select'].includes(tag))return;
-    if(blindIsFrozen())return;
     if(e.key==='Escape'&&drawingEngine?.isActive()){e.preventDefault();drawingEngine.cancel();setTool('select');return}
     if(e.key==='Enter'&&drawingEngine?.getState()?.kind==='suggestion'){e.preventDefault();drawingEngine.accept();return}
     if((e.key==='n'||e.key==='N')&&drawingEngine?.getState()?.kind==='suggestion'){e.preventDefault();drawingEngine.nextCandidate();return}
@@ -457,16 +385,6 @@ async function init(){
   $$('.labelGrid button').forEach(b=>b.onclick=()=>{document.body.dataset.pendingLabel=b.dataset.label;$$('.labelGrid button').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
   $('#saveLabel').onclick=saveHumanLabel;
   $('#exportLabels').onclick=()=>downloadJson('price_action_human_labels.json',getHumanLabels());$('#exportDrawings').onclick=()=>downloadJson('price_action_drawings.json',getDrawings());$('#labelsTable').onclick=handleHumanLabelAction;
-  $$('.mode').forEach(b=>b.onclick=()=>switchMode(b.dataset.mode));
-  initResearchUI({
-    indexData:()=>indexData,
-    currentTF:()=>currentTF,
-    baseRows:()=>baseWindowRows,
-    fullContextRows:()=>fullContextRows,
-    selectedPoint:()=>selectedPoint,
-    showReplayRows:(rows,ctx)=>showRowsForResearch(rows,ctx),
-    fmtBJ
-  });
   structureEntryLab=initStructureCaseLab({
     indexData:()=>indexData,
     currentTF:()=>currentTF,

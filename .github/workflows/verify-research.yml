@@ -1,4 +1,4 @@
-name: Verify Research
+name: Verify Lab
 on:
   pull_request:
   push:
@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: verify-research-${{ github.ref }}
+  group: verify-lab-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   verify:
@@ -19,6 +19,4 @@ jobs:
           node-version: '22'
       - run: npm install --no-audit --no-fund
       - run: npm test
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:browser
       - run: npm run build

@@ -93,7 +93,6 @@ BTCUSDT Price Action Lab 是一个围绕 BTCUSDT 永续合约构建的 Price Act
 - Trendline Intelligence。
 - Structure Case 案例研究。
 - Structure Entry 入场研究。
-- Strategy Research 研究界面。
 - Data Foundation V10 数据层。
 - Binance USD-M Futures 公共行情数据接入。
 - 自动 Smoke Tests。
@@ -166,7 +165,7 @@ GitHub 自动流程位于：
 tests/
 ```
 
-覆盖数据基础、绘图、研究界面、结构案例、结构入场、趋势线等关键模块。
+覆盖数据基础、绘图、结构案例、结构入场、趋势线等关键模块。
 
 自动任务在提交代码前应优先运行测试：
 
@@ -333,7 +332,6 @@ $installers = @(
  "INSTALL_DATA_FOUNDATION_V10.ps1",
  "INSTALL_DRAWING_ENGINE_V5.ps1",
  "INSTALL_INTERACTIVE_V2.ps1",
- "INSTALL_STRATEGY_RESEARCH_V3.ps1",
  "INSTALL_STRUCTURE_CASE_V7.ps1",
  "INSTALL_STRUCTURE_CASE_V8.ps1",
  "INSTALL_STRUCTURE_CASE_V9_RESEARCH_UI.ps1",
@@ -347,7 +345,7 @@ foreach ($name in $installers) {
     }
 }
 
-foreach ($name in @("README_FIRST.txt","RESUME_V3_WITHOUT_NODE.ps1")) {
+foreach ($name in @("README_FIRST.txt")) {
     $src = Join-Path $ProjectRoot $name
     if (Test-Path -LiteralPath $src) {
         Move-Item -LiteralPath $src -Destination (Join-Path $docsArchive $name) -Force
@@ -410,7 +408,7 @@ $obsolete = @(
  ".env.*",
  "Thumbs.db",
  ".DS_Store"
-) + $installers + @("README_FIRST.txt","RESUME_V3_WITHOUT_NODE.ps1")
+) + $installers + @("README_FIRST.txt")
 
 $commentPrefixes = @(
  "# ChatGPT / BTCQuant local launcher artifacts",

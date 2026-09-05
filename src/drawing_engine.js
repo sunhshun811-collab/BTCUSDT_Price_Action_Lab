@@ -51,8 +51,6 @@ export function createTrendDrawingEngine(api){
     publish('drawing',{message:'松开鼠标立即成线；智能校准只作为可选建议，不会阻挡画线。'});
   }
   function makeRawDrawing(){
-    const replay=api.replayState?.()||{};
-    const causal=!!(replay.active&&!replay.futureRevealed);
     return {
       id:crypto.randomUUID(),type:'trend',
       timeframe:api.timeframe(),drawnOnTimeframe:api.timeframe(),
@@ -60,8 +58,7 @@ export function createTrendDrawingEngine(api){
       mode:api.trendMode(),style:newTrendStyle(),locked:false,visible:true,
       role:'auto',zoneAtr:.25,geometryRevision:1,styleRevision:1,
       calibration:{method:'manual',anchorType:'手绘',score:null,confidence:null,rank:0,candidateCount:0},
-      researchConfirmed:false,causalEligible:causal,validFrom:causal?replay.decisionTime:null,
-      origin:causal?'blind_replay_manual':'manual',createdAt:new Date().toISOString()
+      origin:'manual',createdAt:new Date().toISOString()
     };
   }
   function onUp(ev){
