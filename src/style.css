@@ -1,5 +1,8 @@
 
 :root{font-family:Inter,"Microsoft YaHei",system-ui,sans-serif;color:#dce8f5;background:#07101a;--bg:#07101a;--panel:#0d1723;--panel2:#101d2b;--line:#223448;--muted:#8ea2b7;--green:#2fd18b;--red:#ff6470;--blue:#4d95ff;--yellow:#e7bf55}
+.chartHeader{flex-wrap:wrap;gap:8px}
+.movingAverageLegend{display:flex;flex-wrap:wrap;gap:12px;font-variant-numeric:tabular-nums}
+.chartHeader .movingAverageItem{margin-left:0;font-size:11px;white-space:nowrap}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -20%,#13263b 0,#07101a 40%);min-height:100vh}button,select,input,textarea{font:inherit}button{cursor:pointer}
 .topbar{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;border-bottom:1px solid var(--line);background:rgba(7,16,26,.92);position:sticky;top:0;z-index:10;backdrop-filter:blur(8px)}
 .brand{font-size:20px;font-weight:850}.subtitle{font-size:11px;color:var(--muted);margin-top:4px}.badges{display:flex;gap:7px;flex-wrap:wrap}.badges span{font-size:10px;padding:5px 8px;border:1px solid #28445f;border-radius:20px;color:#a9c6e2}
