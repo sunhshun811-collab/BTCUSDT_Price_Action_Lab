@@ -1,8 +1,8 @@
 
-import {loadMonths} from './data.js';
+import {loadMonthsSmart as loadMonths} from './data_foundation_v10.js';
 import {
   TF_SECONDS,TF_ORDER,getStrategyVersion,setStrategyVersion,getCases,saveCase,
-  computeFeatures,nearestContext,marketStage,setupClarity,similarCases,outcomeFrom1m,makeCaseId
+  computeFeatures,nearestContext,marketStage,setupClarity,similarCases,outcomeFrom1m,makeCaseId,updateCaseOutcome
 } from './research.js';
 import {getDrawings} from './annotations.js';
 import {eligibleTrendlineFeatures,trendlineConfluence} from './trendline_research.js';
@@ -31,28 +31,49 @@ const fmtP=x=>x==null?'—':`${(Number(x)*100).toFixed(2)}%`;
 const fmtN=(x,d=2)=>x==null||!Number.isFinite(Number(x))?'—':Number(x).toFixed(d);
 
 let api=null,blind=null,lastSnapshot=null,lastOutcome=null;
+const decisionFields='.researchDirection button,#setupType,#strategyVersion,#researchConfidence,#vetoChecks input,#researchNote';
 
-function monthStr(sec){return new Date(sec*1000).toISOString().slice(0,7)}
-function adjacentMonths(all,sec,back=2,forward=1){
-  const m=monthStr(sec),i=all.indexOf(m);if(i<0)return all.slice(-Math.min(all.length,back+forward+1));
-  return all.slice(Math.max(0,i-back),Math.min(all.length,i+forward+1));
+function emitReplayState(){
+  window.dispatchEvent(new CustomEvent('palab:replay-state',{detail:{
+    active:!!blind&&!blind.manual,decisionTime:blind?.decisionTime??null,futureRevealed:!!blind?.revealed
+  }}));
 }
-async function buildSnapshot(decisionTime){
+function lockDecision(locked){$$(decisionFields).forEach(el=>el.disabled=locked)}
+function clearTrialView(){
+  lastSnapshot=null;lastOutcome=null;delete document.body.dataset.researchDirection;
+  lockDecision(false);
+  $$('.researchDirection button').forEach(b=>b.classList.remove('active'));
+  $$('#vetoChecks input').forEach(x=>x.checked=false);
+  $('#researchNote').value='';$('#setupType').value='';
+  $('#researchConfidence').value='80';$('#researchConfidenceText').textContent='80';
+  for(const id of ['tfSnapshot','stageProb','snapshotContext','similarCases','outcomeTable','saveFeedback'])$('#'+id).textContent='';
+  $('#clarityScore').innerHTML='<strong>—</strong><span>/100</span>';
+  $('#revealFuture').disabled=true;$('#saveResearchCase').disabled=true;
+}
+
+function adjacentMonths(all,sec,back=2,forward=1){
+  const date=new Date(sec*1000),months=[];
+  for(let offset=-back;offset<=forward;offset++)months.push(new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth()+offset,1)).toISOString().slice(0,7));
+  return months.filter(m=>all.includes(m));
+}
+async function buildSnapshot(session){
+  const {decisionTime,indexData,drawings,fullContext}=session;
   const timeframes={};
   for(const tf of TF_ORDER){
-    const all=api.indexData().timeframes?.[tf]||[];
+    const all=indexData.timeframes?.[tf]||[];
     const months=adjacentMonths(all,decisionTime,2,0);
     const rows=months.length?await loadMonths(tf,months):[];
     timeframes[tf]=computeFeatures(rows,tf,decisionTime);
-    timeframes[tf].trendlines=eligibleTrendlineFeatures(getDrawings(),rows,tf,decisionTime);
+    // Existing annotations may have been made after seeing the future path.
+    timeframes[tf].trendlines=eligibleTrendlineFeatures(session.manual?drawings:[],rows,tf,decisionTime);
   }
-  const context=nearestContext(api.fullContextRows(),decisionTime);
+  const context=nearestContext(fullContext,decisionTime);
   const snapshot={decisionTime,timeframes,context};
   snapshot.trendlineConfluence=trendlineConfluence(snapshot);
   snapshot.stage=marketStage(snapshot);snapshot.clarity=setupClarity(snapshot);
   return snapshot;
 }
-function directionValue(){return Number(document.body.dataset.researchDirection||0)}
+function directionValue(){const v=document.body.dataset.researchDirection;return v==null?null:Number(v)}
 function selectedSetup(){return $('#setupType').value}
 function selectedVetos(){return $$('#vetoChecks input:checked').map(x=>x.value)}
 function renderSnapshot(s){
@@ -75,20 +96,23 @@ function renderSnapshot(s){
 }
 function renderSimilar(){
   if(!lastSnapshot)return;
+  if(blind&&!blind.manual&&!blind.revealed){$('#similarCases').textContent='保存决策并揭示未来后，才能查看历史相似案例。';return}
   const v=similarCases(lastSnapshot,getCases(),8);
   $('#similarCases').innerHTML=v.length?v.map(x=>`<button class="similarCase" data-id="${x.id}"><span>${x.strategyVersion}</span><b>${SETUPS[x.setup]||x.setup}</b><em>相似 ${(x.similarity*100).toFixed(0)}% · ${LABEL[x.direction]}</em></button>`).join(''):'还没有足够的已保存案例。';
   $$('.similarCase').forEach(b=>b.onclick=()=>{const x=getCases().find(c=>c.id===b.dataset.id);if(x)alert(`${SETUPS[x.setup]||x.setup}\n${LABEL[x.direction]}\n${x.note||''}`)});
 }
 function renderOutcome(o){
-  lastOutcome=o;if(!o?.available){$('#outcomeTable').innerHTML='当前数据范围没有足够的 1m 未来路径。';return}
+  lastOutcome=o;if(!o?.available){$('#outcomeTable').textContent=o?.reason==='no_trade'?'已记录不交易；不计算方向性收益、MFE 或 MAE。':'缺少决策时点的 1 分钟入场数据，无法计算结果。';return}
   const names={m5:'5m',m15:'15m',h1:'1h',h4:'4h',h8:'8h',h24:'24h'};
   $('#outcomeTable').innerHTML='<table><thead><tr><th>窗口</th><th>收益</th><th>MFE</th><th>MAE</th><th>10x保证金MAE</th><th>账户MAE≈</th></tr></thead><tbody>'+
   Object.entries(o.horizons).map(([k,x])=>x?`<tr><td>${names[k]}</td><td>${fmtP(x.return)}</td><td>${fmtP(x.mfe)}</td><td>${fmtP(x.mae)}</td><td>${fmtP(x.marginMae10x)}</td><td>${fmtP(x.accountMaeApprox)}</td></tr>`:`<tr><td>${names[k]}</td><td colspan="5">数据不足</td></tr>`).join('')+'</tbody></table>';
 }
-async function computeOutcome(decisionTime,direction){
-  const all=api.indexData().timeframes?.['1m']||[],months=adjacentMonths(all,decisionTime,0,2);
+async function computeOutcome(session,direction){
+  const {decisionTime,indexData}=session;
+  if(direction===0)return outcomeFrom1m([],decisionTime,0);
+  const all=indexData.timeframes?.['1m']||[],months=adjacentMonths(all,decisionTime,0,1);
   const rows=months.length?await loadMonths('1m',months):[];
-  return outcomeFrom1m(rows,decisionTime,direction||1);
+  return outcomeFrom1m(rows,decisionTime,direction);
 }
 function chooseBlindPoint(){
   const rows=api.baseRows(),tf=api.currentTF();if(rows.length<30)return null;
@@ -97,60 +121,100 @@ function chooseBlindPoint(){
 }
 async function startBlind(){
   const p=chooseBlindPoint();if(!p){alert('当前窗口K线太少。');return}
-  blind={...p,fullRows:api.baseRows().slice(),fullContext:api.fullContextRows().slice()};
-  const frozen=blind.fullRows.filter(r=>r[0]<=p.row[0]);
-  const frozenCtx=blind.fullContext.filter(x=>x.time<=p.decisionTime);
+  const session=beginTrial(p,false);
+  const frozen=session.fullRows.filter(r=>Number(r[0])+TF_SECONDS[session.timeframe]<=p.decisionTime);
+  const frozenCtx=session.fullContext.filter(x=>x.time<=p.decisionTime);
   api.showReplayRows(frozen,frozenCtx);
-  window.dispatchEvent(new CustomEvent('palab:replay-state',{detail:{active:true,decisionTime:p.decisionTime,futureRevealed:false}}));
-  $('#blindStatus').textContent=`未来已冻结：决策时点 ${api.fmtBJ(p.decisionTime,true)}`;
-  $('#revealFuture').disabled=false;$('#saveResearchCase').disabled=false;
-  $('#outcomeTable').innerHTML='未来仍被隐藏。先做判断，再点击“显示未来”。';
-  renderSnapshot(await buildSnapshot(p.decisionTime));
+  $('#blindStatus').textContent=`未来已冻结：${api.fmtBJ(p.decisionTime,true)} · 正在生成快照…`;
+  $('#outcomeTable').textContent='未来仍被隐藏。先选择方向并保存决策，再揭示未来。';
+  await loadTrialSnapshot(session);
+}
+function beginTrial(point,manual){
+  clearTrialView();
+  blind={...point,id:makeCaseId(),manual,timeframe:api.currentTF(),indexData:api.indexData(),
+    drawings:getDrawings(),fullRows:api.baseRows().slice(),fullContext:api.fullContextRows().slice(),
+    record:null,revealed:false,revealing:false};
+  emitReplayState();$('#endBlindReplay').disabled=false;
+  return blind;
+}
+async function loadTrialSnapshot(session){
+  try{
+    const snapshot=await buildSnapshot(session);
+    if(blind!==session)return;
+    if(!Object.values(snapshot.timeframes).some(f=>f.available))throw new Error('决策时点没有足够的已收盘行情数据');
+    renderSnapshot(snapshot);$('#saveResearchCase').disabled=false;
+    $('#blindStatus').textContent=`${session.manual?'手动复盘（非盲测）':'未来已冻结'}：${api.fmtBJ(session.decisionTime,true)} · 请先保存决策`;
+  }catch(err){
+    if(blind!==session)return;
+    $('#blindStatus').textContent='快照加载失败：'+err.message+'；请重新选择案例。';
+  }
 }
 async function reveal(){
-  if(!blind)return;
-  api.showReplayRows(blind.fullRows,blind.fullContext);
-  window.dispatchEvent(new CustomEvent('palab:replay-state',{detail:{active:true,decisionTime:blind.decisionTime,futureRevealed:true}}));
-  const d=directionValue()||1,o=await computeOutcome(blind.decisionTime,d);renderOutcome(o);
-  $('#blindStatus').textContent=`未来已显示 · 决策时点 ${api.fmtBJ(blind.decisionTime,true)}`;
+  const session=blind;
+  if(!session?.record||session.revealing)return;
+  session.revealing=true;$('#revealFuture').disabled=true;
+  session.revealed=true;session.futureRevealedAt??=new Date().toISOString();emitReplayState();
+  api.showReplayRows(session.fullRows,session.fullContext);renderSimilar();
+  $('#blindStatus').textContent='未来已显示，正在计算并保存结果…';
+  try{
+    const outcome=await computeOutcome(session,session.record.direction);
+    // A finished request belongs to its original record even after switching trials.
+    session.record=updateCaseOutcome(session.record.id,outcome,session.futureRevealedAt);
+    if(blind!==session)return;
+    renderOutcome(outcome);
+    $('#blindStatus').textContent=`${session.manual?'手动复盘':'盲测'}结果已保存 · 决策时点 ${api.fmtBJ(session.decisionTime,true)}`;
+  }catch(err){
+    if(blind!==session)return;
+    $('#blindStatus').textContent='原始决策已保留，结果计算或保存失败：'+err.message+'；可点击“揭示未来并保存结果”重试。';
+    $('#revealFuture').disabled=false;
+  }finally{session.revealing=false}
 }
 async function snapshotCurrent(){
+  if(blind&&!blind.manual&&!blind.revealed){alert('请先完成或结束当前盲测，再抓取手动复盘快照。');return}
   const p=api.selectedPoint();
   if(!p){alert('先在主图点击一个决策位置。');return}
   const decisionTime=p.time+TF_SECONDS[api.currentTF()];
-  renderSnapshot(await buildSnapshot(decisionTime));
-  blind={decisionTime,row:[p.time],fullRows:api.baseRows().slice(),fullContext:api.fullContextRows().slice(),manual:true};
-  $('#saveResearchCase').disabled=false;$('#blindStatus').textContent=`手动决策时点 ${api.fmtBJ(decisionTime,true)}`;
+  const session=beginTrial({decisionTime,row:[p.time]},true);
+  api.showReplayRows(session.fullRows,session.fullContext);
+  $('#blindStatus').textContent='正在生成手动复盘快照（非盲测）…';
+  await loadTrialSnapshot(session);
 }
-async function saveCurrentCase(){
-  if(!blind||!lastSnapshot){alert('先开始 Blind Replay 或抓取当前快照。');return}
-  const direction=directionValue(),setup=selectedSetup(),vetos=selectedVetos();
-  const version=($('#strategyVersion').value||getStrategyVersion()).trim()||'PA_SETUP_V001';setStrategyVersion(version);
+function saveCurrentCase(){
+  if(!blind||!lastSnapshot){alert('请先开始盲测或抓取手动复盘快照。');return}
+  if(blind.record||blind.revealed)return;
+  const direction=directionValue(),setup=direction===0?'no_trade':selectedSetup(),vetos=selectedVetos();
+  if(![-2,-1,0,1,2].includes(direction)){alert('请选择方向，也可以明确选择“不交易”。');return}
+  const version=($('#strategyVersion').value||getStrategyVersion()).trim()||'PA_SETUP_V001';
   const note=$('#researchNote').value.trim();
   const x={
-    id:makeCaseId(),createdAt:new Date().toISOString(),decisionTime:blind.decisionTime,
-    decisionBeijing:api.fmtBJ(blind.decisionTime,true),timeframe:api.currentTF(),strategyVersion:version,
+    id:blind.id,createdAt:new Date().toISOString(),decisionTime:blind.decisionTime,
+    decisionBeijing:api.fmtBJ(blind.decisionTime,true),timeframe:blind.timeframe,strategyVersion:version,
     direction,setup,vetos,confidence:Number($('#researchConfidence').value),note,
-    clarity:lastSnapshot.clarity,snapshot:lastSnapshot,outcome:lastOutcome
+    clarity:lastSnapshot.clarity,snapshot:lastSnapshot,outcome:null,
+    researchMode:blind.manual?'manual_review':'blind_replay',decisionLockedAt:new Date().toISOString(),futureRevealedAt:null
   };
-  saveCase(x);$('#caseCount').textContent=getCases().length;$('#researchNote').value='';renderSimilar();
-  $('#saveFeedback').textContent='已保存完整 Feature Snapshot';setTimeout(()=>$('#saveFeedback').textContent='',1800);
+  try{saveCase(x)}catch(err){$('#saveFeedback').textContent='决策保存失败：'+err.message+'；未来保持隐藏。';return}
+  blind.record=x;lockDecision(true);$('#saveResearchCase').disabled=true;$('#revealFuture').disabled=false;
+  $('#caseCount').textContent=getCases().length;
+  try{setStrategyVersion(version)}catch{}
+  $('#saveFeedback').textContent='决策与特征快照已保存并锁定，可以揭示未来。';
+  renderSimilar();
 }
 function populate(){
-  $('#setupType').innerHTML=Object.entries(SETUPS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+  $('#setupType').innerHTML='<option value="">请选择形态（可留空）</option>'+Object.entries(SETUPS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
   $('#vetoChecks').innerHTML=Object.entries(VETOS).map(([k,v])=>`<label class="checkItem"><input type="checkbox" value="${k}">${v}</label>`).join('');
   $('#strategyVersion').value=getStrategyVersion();$('#caseCount').textContent=getCases().length;
 }
 export function initResearchUI(x){
   api=x;populate();
   $('#startBlindReplay').onclick=startBlind;$('#nextBlindReplay').onclick=startBlind;$('#revealFuture').onclick=reveal;
+  $('#endBlindReplay').onclick=()=>{const session=blind;researchDataChanged();if(session)api.showReplayRows(session.fullRows,session.fullContext)};
   $('#snapshotCurrent').onclick=snapshotCurrent;$('#saveResearchCase').onclick=saveCurrentCase;
   $('#researchConfidence').oninput=()=>$('#researchConfidenceText').textContent=$('#researchConfidence').value;
-  $$('.researchDirection button').forEach(b=>b.onclick=()=>{document.body.dataset.researchDirection=b.dataset.dir;$$('.researchDirection button').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
+  $$('.researchDirection button').forEach(b=>b.onclick=()=>{if(blind?.record)return;document.body.dataset.researchDirection=b.dataset.dir;$$('.researchDirection button').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
 }
 export function researchDataChanged(){
-  if(!api)return;blind=null;lastSnapshot=null;lastOutcome=null;
-  window.dispatchEvent(new CustomEvent('palab:replay-state',{detail:{active:false,decisionTime:null,futureRevealed:false}}));
-  $('#revealFuture').disabled=true;$('#saveResearchCase').disabled=true;
-  $('#blindStatus').textContent='尚未开始 Blind Replay。';$('#tfSnapshot').innerHTML='';$('#stageProb').innerHTML='';$('#outcomeTable').innerHTML='';
+  if(!api)return;blind=null;clearTrialView();emitReplayState();
+  $('#endBlindReplay').disabled=true;
+  $('#blindStatus').textContent='尚未开始盲测。';
 }

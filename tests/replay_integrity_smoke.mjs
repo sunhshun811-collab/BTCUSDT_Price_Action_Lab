@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import {outcomeFrom1m,saveCase,getCases,updateCaseOutcome} from '../src/research.js';
+
+const start=1704067200;
+const rows=Array.from({length:1440},(_,i)=>[start+i*60,100,102,99,101,10]);
+const complete=outcomeFrom1m(rows,start,1);
+assert.ok(Math.abs(complete.horizons.h24.return-.01)<1e-12);
+assert.ok(Math.abs(complete.horizons.m5.mfe-.02)<1e-12);
+assert.ok(Math.abs(complete.horizons.m5.mae+.01)<1e-12);
+const short=outcomeFrom1m(rows,start,-2);
+assert.ok(Math.abs(short.horizons.m5.return+.01)<1e-12);
+assert.ok(Math.abs(short.horizons.m5.mfe-.01)<1e-12);
+assert.ok(Math.abs(short.horizons.m5.mae+.02)<1e-12);
+const partial=outcomeFrom1m(rows.slice(0,5),start,1);
+assert.ok(partial.horizons.m5);
+assert.equal(partial.horizons.m15,null);
+assert.equal(partial.horizons.h24,null);
+assert.equal(outcomeFrom1m(rows.slice(0,4),start,1).horizons.m5,null);
+assert.equal(outcomeFrom1m(rows.filter((_,i)=>i!==10),start,1).horizons.m15,null);
+assert.equal(outcomeFrom1m([...rows,rows[1]],start,1).horizons.m5,null);
+assert.equal(outcomeFrom1m(rows.slice(1),start,1).reason,'missing_entry');
+assert.equal(outcomeFrom1m(rows,start,0).reason,'no_trade');
+assert.equal(outcomeFrom1m(rows,start,null).reason,'invalid_decision');
+const malformed=structuredClone(rows);malformed[2][3]=null;
+assert.equal(outcomeFrom1m(malformed,start,1).horizons.m5,null);
+
+globalThis.localStorage={data:new Map(),getItem(k){return this.data.get(k)??null},setItem(k,v){this.data.set(k,String(v))}};
+const original={id:'trial-1',direction:-1,note:'原始决策',snapshot:{decisionTime:start},outcome:null};
+saveCase(original);
+const updated=updateCaseOutcome(original.id,short,'2026-09-05T00:00:00Z');
+assert.equal(getCases().length,1);
+assert.equal(updated.direction,original.direction);
+assert.equal(updated.note,original.note);
+assert.deepEqual(updated.snapshot,original.snapshot);
+assert.deepEqual(original.outcome,null);
+assert.throws(()=>updateCaseOutcome('missing',short,''),/不存在/);
+console.log('REPLAY_INTEGRITY_SMOKE_OK');

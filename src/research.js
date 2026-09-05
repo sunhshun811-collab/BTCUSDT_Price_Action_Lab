@@ -9,6 +9,13 @@ export function getStrategyVersion(){return localStorage.getItem(VERSION_KEY)||'
 export function setStrategyVersion(v){localStorage.setItem(VERSION_KEY,String(v||'PA_SETUP_V001').trim()||'PA_SETUP_V001')}
 export function getCases(){try{return JSON.parse(localStorage.getItem(CASE_KEY)||'[]')}catch{return[]}}
 export function saveCase(x){const v=getCases();v.push(x);localStorage.setItem(CASE_KEY,JSON.stringify(v));return x}
+// Revealing a path may update only the result, never the recorded decision.
+export function updateCaseOutcome(id,outcome,futureRevealedAt){
+  const rows=getCases(),i=rows.findIndex(x=>x.id===id);
+  if(i<0)throw new Error('原始决策记录不存在，无法保存结果。');
+  rows[i]={...rows[i],outcome,futureRevealedAt,outcomeComputedAt:new Date().toISOString()};
+  localStorage.setItem(CASE_KEY,JSON.stringify(rows));return rows[i];
+}
 export function clearCases(){localStorage.removeItem(CASE_KEY)}
 
 const finite=x=>Number.isFinite(Number(x));
@@ -164,16 +171,25 @@ export function similarCases(snapshot,cases=getCases(),limit=8){
   }).sort((a,b)=>b.similarity-a.similarity).slice(0,limit);
 }
 export function outcomeFrom1m(rows,decisionTime,direction=1){
-  const future=rows.filter(r=>r[0]>=decisionTime).sort((a,b)=>a[0]-b[0]);
-  if(!future.length)return {available:false};
-  const entry=future[0][1],entryTime=future[0][0],sign=direction>=0?1:-1;
+  if(direction===0)return {available:false,reason:'no_trade',direction:0};
+  if(![-2,-1,1,2].includes(direction)||!Number.isFinite(decisionTime))return {available:false,reason:'invalid_decision'};
+  const future=rows.filter(r=>Number(r[0])>=decisionTime).sort((a,b)=>a[0]-b[0]);
+  if(!future.length)return {available:false,reason:'missing_entry'};
+  const entry=Number(future[0][1]),entryTime=Number(future[0][0]),sign=direction>0?1:-1;
+  // Missing the decision minute must not silently move entry into the future.
+  if(entryTime!==decisionTime||!Number.isFinite(entry)||entry<=0)return {available:false,reason:'missing_entry'};
   const horizons={m5:5,m15:15,h1:60,h4:240,h8:480,h24:1440};
   const out={available:true,entry,entryTime,horizons:{},direction:sign};
   for(const [k,n] of Object.entries(horizons)){
     const xs=future.filter(r=>r[0]<entryTime+n*60);
-    if(!xs.length){out.horizons[k]=null;continue}
+    const complete=xs.length===n&&xs.every((r,i)=>
+      Number(r[0])===entryTime+i*60&&r.slice(1,5).length===4&&
+      r.slice(1,5).every(v=>v!=null&&Number.isFinite(Number(v))&&Number(v)>0)&&
+      Number(r[2])>=Math.max(Number(r[1]),Number(r[4]),Number(r[3]))&&
+      Number(r[3])<=Math.min(Number(r[1]),Number(r[4])));
+    if(!complete){out.horizons[k]=null;continue}
     const last=xs.at(-1)[4],ret=sign*(last/entry-1);
-    let mfe=-Infinity,mae=Infinity,mfeTime=null,maeTime=null;
+    let mfe=0,mae=0,mfeTime=entryTime,maeTime=entryTime;
     for(const r of xs){
       const favorable=sign>0?r[2]/entry-1:1-r[3]/entry;
       const adverse=sign>0?r[3]/entry-1:1-r[2]/entry;

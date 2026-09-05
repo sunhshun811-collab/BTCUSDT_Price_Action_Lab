@@ -9,6 +9,8 @@
 
 **可视化界面：** [https://sunhshun811-collab.github.io/BTCUSDT_Price_Action_Lab/](https://sunhshun811-collab.github.io/BTCUSDT_Price_Action_Lab/)
 
+**功能树：** [查看功能树](https://sunhshun811-collab.github.io/BTCUSDT_Price_Action_Lab/function-map.html)
+
 ## 项目定位
 
 BTCUSDT Price Action Lab 是一个围绕 BTCUSDT 永续合约构建的 Price Action / Market Structure 研究环境。
@@ -41,46 +43,45 @@ BTCUSDT Price Action Lab 是一个围绕 BTCUSDT 永续合约构建的 Price Act
 
 ## 正式界面模块
 
-当前可视化工作台的正式编号冻结为 **F01 + M01–M06**：
+当前代码已将操作入口收敛为 **F01 研究基础层 + M01–M03 三个工作台**：
 
-- **F01 — 共享底层数据层**：Data Foundation V10、K 线、多周期数据、Futures Context、人工标签持久化。
-- **M01 — 主图与市场定位**：K 线、周期、日期范围、成交量、十字光标与 OHLC。
-- **M02 — 图形标注与趋势线**：趋势线、水平位、磁吸、自动校准、锚点管理与趋势线研究。
-- **M03 — 人工判断**：方向、置信度、备注、历史标签管理与标签 JSON 导出。
-- **M04 — Structure Case 条件化买点研究**：同一趋势线在所有周期保持完全相同的锚点、几何、模式、颜色、线宽和线型；周期只改变 K 线观察分辨率：趋势线 / 水平位跨周期共享，绘制周期只作为来源元数据；任意周期均可锁定并投影到其他周期：内置 Case Research Ledger，使用 IndexedDB 自动保存案例、人工判断、扫描版本与历史恢复：母结构、Entry Zone、低周期扫描、候选判断、买点阶梯与当前案例规则草案。
-- **M05 — 永续衍生品上下文**：Funding、OI、Basis、Positioning、主动买卖与主图联动。
-- **M06 — Blind Replay 盲测研究**：冻结未来、六周期因果快照、决策、Veto、Feature Snapshot、MFE / MAE 与相似案例。
+- **F01 — 研究基础层**：K 线、多周期数据、永续衍生品上下文、图形、人工标签与研究记录。
+- **M01 — 市场工作台**：主图、周期与日期定位、快速人工判断、标签管理和市场上下文。
+- **M02 — 结构研究工作台**：图形标注、趋势线、水平位、结构案例、低周期扫描与案例历史。
+- **M03 — 盲测研究**：冻结未来、六周期因果快照、保存并锁定决策、揭示未来和结果记录。
 
-原“六周期同步总览”和原“人工教学数据”独立页面已退役；多周期研究由 M01 / M04 / M06 承担，人工标签的操作归 M03、底层持久化归 F01。后续新增模块从 M07 开始，不再因删除旧模块反复重编号。
+历史文档、存储元数据和测试名中的 M04/M06 等编号保留兼容含义，以当前工作台入口作为界面说明。同一趋势线和水平位在不同周期保持相同几何与样式，绘制周期只作为来源元数据。
+
+盲测先保存决策再揭示未来，手动复盘单独标记；结果只在分钟数据完整的窗口内计算。[盲测操作与记录规则](docs/BLIND_REPLAY_INTEGRITY.md)
 
 ## 数据与周期
 
 当前主要研究对象：
 
-`	ext
+```text
 Binance USD-M Futures
 BTCUSDT
-`
+```
 
 主要周期包括：
 
-`	ext
+```text
 8h
 4h
 1h
 15m
 5m
 1m
-`
+```
 
 实际数据结构、更新方式和部署逻辑，以仓库中的以下目录为准：
 
-`	ext
+```text
 .github/workflows/
 scripts/
 public/
 src/
-`
+```
 
 ## 本地运行
 
@@ -93,42 +94,50 @@ src/
 
 项目本地启动入口：
 
-`powershell
+```powershell
 powershell -ExecutionPolicy Bypass -File .\RUN_LOCAL_DEV.ps1
-`
+```
 
 ## 数据更新与发布
 
 数据更新/发布入口：
 
-`powershell
+```powershell
 powershell -ExecutionPolicy Bypass -File .\UPDATE_DATA_AND_PUBLISH.ps1
-`
+```
 
 GitHub 自动流程位于：
 
-`	ext
+```text
 .github/workflows/
-`
+```
 
 ## 自动测试
 
+在 VS Code 集成终端运行全部 Smoke Tests：
+
+```powershell
+npm test
+```
+
+浏览器测试与构建命令见[盲测验证说明](docs/BLIND_REPLAY_INTEGRITY.md)。
+
 核心 Smoke Tests 位于：
 
-`	ext
+```text
 tests/
-`
+```
 
 覆盖数据基础、绘图、研究界面、结构案例、结构入场、趋势线等关键模块。
 
 自动任务在提交代码前应优先运行测试：
 
-`	ext
+```text
 测试通过
 → git commit
 → git push
 → GitHub Actions
-`
+```
 
 测试失败时停止发布。
 
@@ -153,8 +162,7 @@ tests/
 
 - 运行日志。
 - 缓存。
-- 
-ode_modules/。
+- `node_modules/`。
 - 临时构建产物。
 - 本机注册信息。
 - .env。
@@ -163,7 +171,7 @@ ode_modules/。
 
 ## 目录结构
 
-`	ext
+```text
 BTCUSDT_Price_Action_Lab/
 ├─ .github/                  # GitHub Actions / Pages
 ├─ docs/                     # 文档、历史说明与归档
@@ -179,13 +187,13 @@ BTCUSDT_Price_Action_Lab/
 ├─ package.json
 ├─ index.html
 └─ vite.config.js
-`
+```
 
 ## BTCQuant 一键自动化
 
 项目支持 .btcquantjob。
 
-`	ext
+```text
 ChatGPT 生成任务
         ↓
 Windows 打开 .btcquantjob
@@ -201,13 +209,13 @@ git commit
 git push
         ↓
 GitHub Actions
-`
+```
 
 Launcher 的可复现源码放在：
 
-`	ext
+```text
 tools/btcquant_launcher/
-`
+```
 
 机器本地只保留必要的系统注册和运行配置。
 

@@ -23,6 +23,7 @@ let indexData,chart,candle,volume,markerApi,currentRows=[],loadedRows=[],baseWin
 let tool='select',firstAnchor=null,hoverAnchor=null,selectedPoint=null,selectedDrawingId=null,reanchor=null;
 let lineSeries=[],priceLines=[],previewLine=null,rowMap=new Map(),structureSnaps=[],globalRange=null;
 let researchReplayState={active:false,decisionTime:null,futureRevealed:false};
+function blindIsFrozen(){return researchReplayState.active&&!researchReplayState.futureRevealed}
 let drawingEngine=null,structureEntryLab=null;
 let entryCandidateMarkers=[];
 function chartOptions(){
@@ -170,6 +171,7 @@ async function selectDrawing(id){
 }
 
 function nearestDrawing(point,time){
+  if(blindIsFrozen())return null;
   let best=null,bestPx=Infinity;
   for(const d of drawingsForView(currentTF,$('#showHigherTfTrendlines')?.checked!==false)){
     if(d.type==='horizontal'){
@@ -198,6 +200,7 @@ function handleClick(p){
 }
 function renderDrawings(){
   lineSeries.forEach(x=>chart.removeSeries(x.series));lineSeries=[];priceLines.forEach(p=>candle.removePriceLine(p));priceLines=[];
+  if(blindIsFrozen())return;
   for(const d of drawingsForView(currentTF,$('#showHigherTfTrendlines')?.checked!==false)){
     if(d.type==='horizontal'){
       const style=resolveHorizontalStyle(d);
@@ -287,7 +290,7 @@ function humanMarkers(){
   return getHumanLabels().filter(x=>x.timeframe===currentTF).map(x=>{const [shape,color,text]=map[x.label];return{time:x.time,position:x.label>0?'belowBar':x.label<0?'aboveBar':'inBar',shape,color,text:`${text} ${x.confidence}`}})
 }
 function renderHumanMarkers(){
-  if(markerApi)markerApi.setMarkers([...humanMarkers(),...entryCandidateMarkers].sort((a,b)=>a.time-b.time));
+  if(markerApi)markerApi.setMarkers(blindIsFrozen()?[]:[...humanMarkers(),...entryCandidateMarkers].sort((a,b)=>a.time-b.time));
 }
 function setEntryCandidateMarkers(v){entryCandidateMarkers=(v||[]).slice();renderHumanMarkers()}
 
@@ -421,10 +424,19 @@ async function init(){
     const d={id:crypto.randomUUID(),type:'horizontal',timeframe:currentTF,drawnOnTimeframe:currentTF,price:Number(price),style:newHorizontalStyle(),locked:false,visible:true,geometryRevision:1,styleRevision:1,createdAt:new Date().toISOString()};
     addDrawing(d);renderDrawings();selectDrawing(d.id);
   });
-  window.addEventListener('palab:replay-state',e=>{researchReplayState={...researchReplayState,...(e.detail||{})}});
+  window.addEventListener('palab:replay-state',e=>{
+    researchReplayState={...researchReplayState,...(e.detail||{})};
+    document.body.classList.toggle('blindReplayFrozen',blindIsFrozen());
+    if(blindIsFrozen()){
+      drawingEngine?.cancel();setTool('select');reanchor=null;selectedPoint=null;
+      selectDrawing(null);
+    }
+    renderDrawings();renderHumanMarkers();
+  });
   window.addEventListener('keydown',e=>{
     const tag=(document.activeElement?.tagName||'').toLowerCase();
     if(['input','textarea','select'].includes(tag))return;
+    if(blindIsFrozen())return;
     if(e.key==='Escape'&&drawingEngine?.isActive()){e.preventDefault();drawingEngine.cancel();setTool('select');return}
     if(e.key==='Enter'&&drawingEngine?.getState()?.kind==='suggestion'){e.preventDefault();drawingEngine.accept();return}
     if((e.key==='n'||e.key==='N')&&drawingEngine?.getState()?.kind==='suggestion'){e.preventDefault();drawingEngine.nextCandidate();return}
@@ -462,6 +474,5 @@ async function init(){
   await loadGlobalRange();renderHumanLabelsTable();
 }
 init().catch(e=>{document.body.innerHTML=`<pre style="color:white;padding:20px">启动失败：${e.stack||e}</pre>`});
-
 
 

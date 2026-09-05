@@ -242,11 +242,13 @@
       <div class="researchActions">
         <button id="startBlindReplay" class="primary">随机盲测</button>
         <button id="nextBlindReplay">更换案例</button>
-        <button id="snapshotCurrent">保存当前快照</button>
-        <button id="revealFuture" disabled>显示未来</button>
+        <button id="snapshotCurrent">抓取手动复盘快照</button>
+        <button id="revealFuture" disabled>揭示未来并保存结果</button>
+        <button id="endBlindReplay" disabled>结束盲测 / 复盘</button>
       </div>
     </div>
-    <div id="blindStatus" class="blindStatus">尚未开始 Blind Replay。</div>
+    <div id="blindStatus" class="blindStatus" role="status" aria-live="polite">尚未开始盲测。</div>
+    <div class="mutedNote">盲测中暂时隐藏历史图形、标签、案例及相似案例。先选择方向并保存决策，再揭示未来；手动复盘单独标记，不计作盲测样本。</div>
 
     <div class="researchGrid">
       <section class="researchBox">
@@ -277,7 +279,7 @@
         <h4>Veto / 禁止交易条件</h4>
         <div id="vetoChecks" class="vetoChecks"></div>
         <textarea id="researchNote" rows="4" placeholder="为什么买 / 为什么不买 / 你认为最关键的盘感是什么？"></textarea>
-        <button id="saveResearchCase" class="primary" disabled>保存完整研究样本</button>
+        <button id="saveResearchCase" class="primary" disabled>保存并锁定决策</button>
         <span id="saveFeedback"></span>
         <div class="caseCount">已保存案例：<b id="caseCount">0</b></div>
       </section>
@@ -287,6 +289,7 @@
       <section class="researchBox">
         <h4>未来路径 / MFE / MAE</h4>
         <div id="outcomeTable">未来仍被隐藏。</div>
+        <div class="mutedNote">只有从决策时点起连续完整的 1 分钟数据才计算对应窗口；缺失或未完成窗口显示“数据不足”。不交易样本不计算方向性结果。</div>
         <div class="mutedNote">10x保证金 MAE 为价格逆向波动 ×10 的风险视图；账户 MAE≈基于 10%保证金×10x≈100%名义敞口，不替代精确强平模型。</div>
       </section>
       <section class="researchBox">
@@ -307,5 +310,4 @@
 <script type="module" src="/src/main.js"></script>
 </body>
 </html>
-
 
