@@ -4,8 +4,9 @@ const main=r('src/main.js'),ann=r('src/annotations.js'),eng=r('src/drawing_engin
 const ok=(v,m)=>{if(!v)throw new Error(m)};
 ok(layout.includes("M01','市场工作台")||layout.includes("id:'M01',title:'市场工作台'"),'M01 Chinese workspace missing');
 ok(layout.includes("id:'M02',title:'结构研究工作台'"),'M02 merged workspace missing');
-ok(layout.includes("id:'M03',title:'盲测研究'"),'M03 replay workspace missing');
-ok(!layout.includes("id:'M04'")&&!layout.includes("id:'M05'")&&!layout.includes("id:'M06'"),'old top-level modules remain');
+for(const removed of ['M03','M04','M05','M06'])ok(!layout.includes(`id:'${removed}'`),`removed top-level module remains: ${removed}`);
+ok(!layout.includes("target:'#researchPanel'"),'M03 replay target remains');
+ok(!html.includes('id="researchPanel"'),'M03 replay panel remains');
 ok(ann.includes('redoDrawing'),'redo missing');
 ok(ann.includes("return includeCrossTimeframe&&['trend','horizontal'].includes(x.type)"),'cross-timeframe same-object view missing');
 ok(eng.includes("kind:'suggestion'"),'non-blocking smart calibration missing');

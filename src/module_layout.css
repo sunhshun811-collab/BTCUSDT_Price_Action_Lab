@@ -1,4 +1,4 @@
-.moduleWorkspaceFinal{--m01:#4d95ff;--m02:#e7bf55;--m03:#9675ff}
+.moduleWorkspaceFinal{--m01:#4d95ff;--m02:#e7bf55}
 .foundationBadge{border-color:#24a9b8!important;background:#0b2a35!important;color:#8fe8ef!important}.foundationBadge b{margin-right:5px;color:#fff}
 .moduleWorkspaceFinal .topbar{height:76px}.moduleWorkspaceFinal .brand{font-size:22px}
 .moduleWorkspaceFinal .modebar{top:76px;height:48px}.moduleRail{position:sticky;top:124px;z-index:8;padding:7px 14px;display:flex;gap:6px;background:rgba(7,16,26,.96);border-bottom:1px solid var(--line)}
@@ -6,7 +6,7 @@
 .moduleWorkspaceFinal main{padding:14px}.moduleWorkspaceFinal .workspace{grid-template-columns:320px minmax(0,1fr);gap:12px;align-items:start}
 .moduleWorkspaceFinal .leftPanel{padding:0;background:transparent;border:0;box-shadow:none;display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 188px);top:180px}
 .moduleSideCard{background:linear-gradient(180deg,rgba(16,29,43,.98),rgba(9,19,29,.98));border:1px solid var(--line);border-radius:12px;padding:12px}
-.module-m01{border-left:3px solid var(--m01)!important}.module-m02{border-left:3px solid var(--m02)!important}.module-m03{border-left:3px solid var(--m03)!important}
+.module-m01{border-left:3px solid var(--m01)!important}.module-m02{border-left:3px solid var(--m02)!important}
 .moduleCardHeader{display:flex;align-items:flex-start;gap:9px;margin:-2px 0 11px;padding-bottom:9px;border-bottom:1px solid #20374c}
 .moduleCode{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:24px;padding:0 7px;border-radius:7px;background:#18344f;border:1px solid #3d6b94;color:#eaf5ff;font-size:11px;font-weight:850}
 .moduleCardText{display:flex;flex-direction:column;gap:3px}.moduleCardText strong{font-size:13px}.moduleCardText span{font-size:9px;color:#8fa5ba;line-height:1.45}
@@ -19,14 +19,6 @@
 .drawingFloatBar.hidden{display:none}.drawingFloatBar span{font-size:9px;font-weight:800}.drawingFloatBar label{display:flex;align-items:center;gap:4px;font-size:8px;color:#8fa5ba}.drawingFloatBar select,.drawingFloatBar input[type=color]{height:26px;background:#0b1722;color:#dce8f5;border:1px solid #294158;border-radius:5px}
 .drawingFloatBar input[type=color]{width:32px;padding:1px}.drawingFloatBar button{height:27px;border:1px solid #2d465d;background:#122131;color:#d0ddeb;border-radius:6px;padding:0 7px;font-size:8px}.drawingFloatBar .primary{background:#256ed1;color:white}.drawingFloatBar .danger{color:#ff9ba3}
 .caseStaleNotice{margin:8px 0;padding:8px;border:1px solid #765f2b;background:#211b0d;color:#e7bf55;border-radius:7px;font-size:9px}.caseStaleNotice.hidden{display:none}
-/* Historical annotations and retrospective case panels are not blind inputs. */
-body.blindReplayFrozen .leftPanel,
-body.blindReplayFrozen #structureEntryLab,
-body.blindReplayFrozen #entryZoneOverlay,
-body.blindReplayFrozen #idealZoneOverlay,
-body.blindReplayFrozen #drawingFloatBar,
-body.blindReplayFrozen #snapshotCurrent{display:none!important}
-body.blindReplayFrozen .workspace{grid-template-columns:minmax(0,1fr)!important}
 @media(max-width:1450px){.marketCanvasShell{grid-template-columns:minmax(0,1fr) 300px}.marketContextRail .contextCards{grid-template-columns:1fr}}
 @media(max-width:1180px){.moduleWorkspaceFinal .workspace{grid-template-columns:1fr}.moduleWorkspaceFinal .leftPanel{position:static;max-height:none;display:grid;grid-template-columns:1fr 1fr}.marketCanvasShell{grid-template-columns:1fr}.marketContextRail{position:static;max-height:none}}
 @media(max-width:760px){.moduleWorkspaceFinal .leftPanel{display:flex}.moduleJump span{display:none}.drawingFloatBar{right:8px}.marketContextRail .contextCards{grid-template-columns:repeat(2,1fr)}}

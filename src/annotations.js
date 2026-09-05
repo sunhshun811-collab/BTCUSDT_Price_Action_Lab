@@ -72,15 +72,6 @@ export function drawingsForView(tf,includeCrossTimeframe=true){
     return includeCrossTimeframe&&['trend','horizontal'].includes(x.type);
   });
 }
-export function confirmedResearchTrendlines(tf=null,causalOnly=false,decisionTime=null){
-  return getDrawings().filter(x=>{
-    if(x.type!=='trend'||!x.researchConfirmed)return false;
-    if(tf&&x.timeframe!==tf)return false;
-    if(causalOnly&&!x.causalEligible)return false;
-    if(decisionTime!=null&&x.validFrom!=null&&Number(x.validFrom)>Number(decisionTime))return false;
-    return true;
-  });
-}
 export function undoDrawing(){
   const undo=history(UNDO_KEY);if(!undo.length)return getDrawings();
   const current=getDrawings(),prev=undo.pop();write(UNDO_KEY,undo);pushHistory(REDO_KEY,current);

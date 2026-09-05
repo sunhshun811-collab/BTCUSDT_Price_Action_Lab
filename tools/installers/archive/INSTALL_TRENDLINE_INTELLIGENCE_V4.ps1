@@ -6,7 +6,7 @@ $PatchRoot=Split-Path -Parent $MyInvocation.MyCommand.Path
 if(-not(Test-Path (Join-Path $LabRoot ".git"))){throw "Price Action Lab not found: $LabRoot"}
 
 Write-Host "=== INSTALL TRENDLINE INTELLIGENCE V4 ===" -ForegroundColor Cyan
-Write-Host "Trendline object + events + quality + lifecycle + causal research features." -ForegroundColor Yellow
+Write-Host "Trendline object + events + quality + lifecycle." -ForegroundColor Yellow
 Write-Host "Local Node.js is NOT required." -ForegroundColor Green
 Write-Host "NO market data will be downloaded to this PC." -ForegroundColor Green
 
@@ -16,7 +16,7 @@ $backup=Join-Path $env:LOCALAPPDATA "BTCUSDT_Price_Action_Lab_trendline_v4_backu
 New-Item -ItemType Directory -Path $backup -Force|Out-Null
 
 $files=@(
-  "index.html","src\annotations.js","src\main.js","src\research.js","src\research_ui.js",
+  "index.html","src\annotations.js","src\main.js",
   "src\style.css","src\trendline_research.js","tests\trendline_v4_smoke.mjs"
 )
 foreach($rel in $files){
@@ -26,17 +26,17 @@ foreach($rel in $files){
 
 Write-Host "[1/3] Installing validated V4 files..." -ForegroundColor Cyan
 Copy-Item (Join-Path $PatchRoot "payload\index.html") (Join-Path $LabRoot "index.html") -Force
-foreach($name in @("annotations.js","main.js","research.js","research_ui.js","style.css","trendline_research.js")){
+foreach($name in @("annotations.js","main.js","style.css","trendline_research.js")){
   Copy-Item (Join-Path $PatchRoot "payload\src\$name") (Join-Path $LabRoot "src\$name") -Force
 }
 New-Item -ItemType Directory -Path (Join-Path $LabRoot "tests") -Force|Out-Null
 Copy-Item (Join-Path $PatchRoot "payload\tests\trendline_v4_smoke.mjs") (Join-Path $LabRoot "tests\trendline_v4_smoke.mjs") -Force
 
 Write-Host "[2/3] Commit code..." -ForegroundColor Cyan
-git add index.html src/annotations.js src/main.js src/research.js src/research_ui.js src/style.css src/trendline_research.js tests/trendline_v4_smoke.mjs
+git add index.html src/annotations.js src/main.js src/style.css src/trendline_research.js tests/trendline_v4_smoke.mjs
 $changes=git status --porcelain
 if($changes){
-  git commit -m "Promote confirmed trendlines into causal research features"
+  git commit -m "Promote confirmed trendlines into structured analysis"
   if($LASTEXITCODE -ne 0){throw "git commit failed"}
 }else{Write-Host "No new changes to commit." -ForegroundColor DarkGray}
 

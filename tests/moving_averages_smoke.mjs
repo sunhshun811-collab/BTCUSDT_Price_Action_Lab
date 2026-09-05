@@ -75,4 +75,4 @@ assert.match(main,/movingAverages=addMovingAverages\(chart,LineSeries,currentRow
 assert.match(main,/movingAverages\?\.updateLegend\(p\.point&&p\.time\?p\.seriesData:null\)/,
   'the chart crosshair must update the moving-average legend');
 
-console.log('MOVING_AVERAGES_SMOKE_OK: MA10/30/60, causal replay, legend and crosshair values');
+console.log('MOVING_AVERAGES_SMOKE_OK: MA10/30/60, causal prefix, legend and crosshair values');

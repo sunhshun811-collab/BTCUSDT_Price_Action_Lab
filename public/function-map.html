@@ -102,7 +102,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:"Segoe UI"
       body:'围绕 BTCUSDT 的 Price Action / Market Structure 研究与可视化实验室。\n用于盘点功能、识别冗余模块、讨论保留与裁剪。',
       tags:['在线可视化','研究系统','可复现']},
     {id:'nav',title:'顶层入口',icon:'🧭',x:460,y:230,
-      body:'主图编辑\n六周期总览\n人工教学数据\n策略开发室',tags:['导航层']},
+      body:'主图编辑\n六周期总览\n人工教学数据',tags:['导航层']},
     {id:'chart',title:'图表与主图编辑',icon:'📈',x:1320,y:170,
       body:'周期选择\n全局日期范围\n应用到全部周期\n当前光标信息\n8H / 4H / 1H / 15m / 5m / 1m',tags:['主载体','多周期']},
     {id:'drawing',title:'画图工具',icon:'✏️',x:1570,y:430,
@@ -115,20 +115,18 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:"Segoe UI"
       body:'L1 下跌衰竭\nL2 抬高低点（HL）\nL3 结构突破（BOS）\nL4 HL+BOS\nL5 重新收复+HL+BOS\n详情 / 时间轴 / 因子 / 理想区间',tags:['候选分析']},
     {id:'deriv',title:'衍生品上下文',icon:'🔬',x:370,y:940,
       body:'Funding\nOI\nBasis\nPositioning\n与主图十字光标联动\nK线与 Futures Metrics 协同观察',tags:['BTC特色','建议保留']},
-    {id:'blind',title:'Blind Replay / 策略开发室',icon:'🎯',x:230,y:570,
-      body:'随机 Blind Replay\n换一个案例\n抓取当前快照\n显示未来\n市场阶段概率\n六周期因果快照\nVeto / 保存完整研究样本\nMFE / MAE / 相似案例',tags:['二级化候选']},
     {id:'system',title:'系统与仓库层能力',icon:'⚙️',x:900,y:210,
       body:'Data Foundation V10\nBinance 公共行情数据接入\nSmoke Tests\nGitHub Actions 构建/部署\n.btcquantjob → VS Code → GitHub',tags:['基础设施']},
     {id:'src',title:'代码模块映射',icon:'🧩',x:700,y:70,
-      body:'annotations.js\ndrawing_engine.js\ntrendline_calibration.js\ntrendline_research.js\nstructure_case_lab.js\nstructure_entry_lab.js\nresearch_ui.js\nstrategy.js\ndata_foundation_v10.js',tags:['src/']}
+      body:'annotations.js\ndrawing_engine.js\ntrendline_calibration.js\ntrendline_research.js\nstructure_case_lab.js\nstructure_entry_lab.js\ndata_foundation_v10.js',tags:['src/']}
   ];
 
   const edges = [
     ['root','nav'],['root','chart'],['root','drawing'],['root','manual'],
-    ['root','case'],['root','ladder'],['root','deriv'],['root','blind'],
+    ['root','case'],['root','ladder'],['root','deriv'],
     ['root','system'],['root','src'],
     ['chart','drawing'],['chart','manual'],['case','ladder'],['case','manual'],
-    ['blind','manual'],['system','src']
+    ['system','src']
   ];
 
   let saved = null;
@@ -274,12 +272,12 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:"Segoe UI"
 
   const compact = {
     root:[900,600],nav:[460,230],chart:[1320,170],drawing:[1570,430],manual:[1580,800],
-    case:[1240,1040],ladder:[790,1130],deriv:[370,940],blind:[230,570],draft:[280,330],
+    case:[1240,1040],ladder:[790,1130],deriv:[370,940],draft:[280,330],
     system:[900,210],src:[700,70]
   };
   const expanded = {
     root:[900,610],nav:[350,180],chart:[1400,100],drawing:[1760,390],manual:[1760,880],
-    case:[1370,1160],ladder:[780,1300],deriv:[240,1110],blind:[90,580],draft:[180,300],
+    case:[1370,1160],ladder:[780,1300],deriv:[240,1110],draft:[180,300],
     system:[910,180],src:[680,35]
   };
   function applyLayout(map){

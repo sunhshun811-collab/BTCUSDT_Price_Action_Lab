@@ -3,9 +3,8 @@ import './module_layout.css';
 const $=(s,root=document)=>root.querySelector(s);
 const $$=(s,root=document)=>[...root.querySelectorAll(s)];
 const MODULES=[
-  {id:'M01',title:'市场工作台',mode:'editor',target:'.chartHeader'},
-  {id:'M02',title:'结构研究工作台',mode:'editor',target:'#structureEntryLab'},
-  {id:'M03',title:'盲测研究',mode:'research',target:'#researchPanel'}
+  {id:'M01',title:'市场工作台',target:'.chartHeader'},
+  {id:'M02',title:'结构研究工作台',target:'#structureEntryLab'}
 ];
 function mk(tag,cls,text=''){const el=document.createElement(tag);if(cls)el.className=cls;if(text)el.textContent=text;return el}
 function byText(root,selector,text){return $$(selector,root).find(el=>el.textContent.trim().includes(text))||null}
@@ -49,8 +48,6 @@ function foundation(){
   badges.prepend(f);
 }
 function rewriteText(){
-  const names={editor:'研究工作台',research:'盲测研究'};
-  $$('.mode').forEach(b=>{if(names[b.dataset.mode])b.textContent=names[b.dataset.mode]});
   const replace=(sel,from,to)=>{const el=$(sel);if(el&&el.textContent.includes(from))el.textContent=el.textContent.replace(from,to)};
   replace('#lockSelectedStructure','锁定当前结构线','设为当前案例结构');
   replace('#selectCaseZone','选择买点研究区间','选择买点研究区间');
@@ -60,8 +57,6 @@ function rewriteText(){
   replace('#clearDrawings','清空本周期','清空全部图形');
   replace('#exportDrawings','导出趋势线 JSON','导出图形数据');
   const hist=$('.caseHistoryPanel>summary');if(hist)hist.textContent='案例研究记录 · 自动保存与历史版本';
-  const rp=$('#researchPanel .sectionHead h3');if(rp)rp.textContent='盲测研究';
-  const setupLabel=[...document.querySelectorAll('#researchPanel label')].find(x=>x.textContent.trim().startsWith('Setup'));if(setupLabel)setupLabel.childNodes[0].textContent='形态类型';
 }
 function shell(){
   const area=$('.mainArea'),head=$('.chartHeader'),chart=$('#chartWrap'),ctx=$('.contextPanel');
@@ -95,7 +90,7 @@ function rail(){
   const nav=mk('nav','moduleRail');nav.id='moduleRail';
   MODULES.forEach(m=>{
     const b=mk('button','moduleJump');b.innerHTML=`<b>${m.id}</b><span>${m.title}</span>`;
-    b.onclick=()=>{$(`.mode[data-mode="${m.mode}"]`)?.click();setTimeout(()=>$(m.target)?.scrollIntoView({behavior:'smooth',block:'start'}),60)};
+    b.onclick=()=>$(m.target)?.scrollIntoView({behavior:'smooth',block:'start'});
     nav.appendChild(b);
   });
   bar.insertAdjacentElement('afterend',nav);
@@ -105,6 +100,5 @@ export function installModuleLayout(){
   foundation();rewriteText();buildLeft();
   decorate($('#structureEntryLab'),'M02','结构研究工作台','画结构 → 设为当前案例 → 买点研究区间 → 低周期扫描 → 人工判断 → 案例记录');
   decorate($('.contextPanel'),'M01','市场上下文','资金费率 / 持仓量 / 基差 / 仓位结构 / 主动买卖，与主图光标联动');
-  decorate($('#researchPanel'),'M03','盲测研究','冻结未来 → 多周期因果快照 → 人工决策 → 揭示未来 → 风险与结果复盘');
   shell();floatingToolbar();rail();
 }

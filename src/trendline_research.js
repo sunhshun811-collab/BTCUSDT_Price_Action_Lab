@@ -49,10 +49,10 @@ function eventName(x){
     body_break:'BODY_BREAK',acceptance:'ACCEPTANCE',reclaim:'RECLAIM',retest:'RETEST',
     failed_retest:'FAILED_RETEST',false_break:'FALSE_BREAK'})[x]||x;
 }
-export function analyzeTrendline(line,rows,tf,decisionTime=null){
+export function analyzeTrendline(line,rows,tf,endTime=null){
   if(!line||line.type!=='trend'||rows.length<5)return {available:false};
   const sec=TF_SECONDS[tf]||60;
-  const end=decisionTime??(rows.at(-1)[0]+sec);
+  const end=endTime??(rows.at(-1)[0]+sec);
   const x=rows.filter(r=>r[0]+sec<=end).sort((a,b)=>a[0]-b[0]);
   if(x.length<5)return {available:false};
   const role=inferRole(line,x),zoneAtr=finite(line.zoneAtr)?Number(line.zoneAtr):0.25;
@@ -141,24 +141,8 @@ export function analyzeTrendline(line,rows,tf,decisionTime=null){
 
   return {
     available:true,id:line.id,timeframe:tf,role,zoneAtr,quality,lifecycle,
-    researchConfirmed:!!line.researchConfirmed,causalEligible:!!line.causalEligible,
-    validFrom:line.validFrom??null,distanceAtr,slopePerDay,ageDays,touchCount:touchClusters,
+    distanceAtr,slopePerDay,ageDays,touchCount:touchClusters,
     bodyBreakCount:bodyBreaks,wickBreakCount:wickBreaks,avgReactionAtr:mean(reactions),
     anchorFit:fit,currentLinePrice:lastLp,currentPrice:last[4],lastEvent:latest??null,events:lastEvents
   };
-}
-export function eligibleTrendlineFeatures(lines,rows,tf,decisionTime){
-  const eligible=lines.filter(x=>x.type==='trend'&&x.timeframe===tf&&x.researchConfirmed&&x.causalEligible&&(x.validFrom==null||Number(x.validFrom)<=decisionTime));
-  const analyses=eligible.map(x=>analyzeTrendline(x,rows,tf,decisionTime)).filter(x=>x.available);
-  analyses.sort((a,b)=>Math.abs(a.distanceAtr)-Math.abs(b.distanceAtr));
-  return {count:analyses.length,closest:analyses[0]??null,highQuality:analyses.filter(x=>x.quality>=70).length,all:analyses.slice(0,6)};
-}
-export function trendlineConfluence(snapshot,threshold=.45){
-  const xs=[];
-  for(const [tf,f] of Object.entries(snapshot.timeframes||{})){
-    const t=f?.trendlines?.closest;
-    if(t&&Math.abs(t.distanceAtr)<=threshold)xs.push({timeframe:tf,...t});
-  }
-  const quality=xs.length?mean(xs.map(x=>x.quality)):null;
-  return {count:xs.length,quality,lines:xs};
 }
