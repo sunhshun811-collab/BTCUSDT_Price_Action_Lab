@@ -11,6 +11,7 @@ import {createTrendDrawingEngine} from './drawing_engine.js';
 import {resolveTrendStyle,resolveHorizontalStyle,newHorizontalStyle} from './drawing_style.js';
 import {initResearchUI,researchDataChanged} from './research_ui.js';
 import {initStructureCaseLab} from './structure_case_lab.js';
+import {addMovingAverages} from './moving_averages.js';
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const TF_LABEL={'8h':'8小时','4h':'4小时','1h':'1小时','15m':'15分钟','5m':'5分钟','1m':'1分钟'};
@@ -26,6 +27,7 @@ let researchReplayState={active:false,decisionTime:null,futureRevealed:false};
 function blindIsFrozen(){return researchReplayState.active&&!researchReplayState.futureRevealed}
 let drawingEngine=null,structureEntryLab=null;
 let entryCandidateMarkers=[];
+let movingAverages=null;
 function chartOptions(){
   return {
     autoSize:true,layout:{background:{color:'#09121c'},textColor:'#91a5b9',attributionLogo:true},
@@ -79,6 +81,7 @@ function setGlobalRange(startDate,endDate){
 function globalFrom(){return bjStart(globalRange.startDate)}
 function globalTo(){return bjEnd(globalRange.endDate)}
 function destroyMain(){
+  movingAverages=null;
   lineSeries=[];priceLines=[];previewLine=null;if(chart){chart.remove();chart=null}
 }
 function buildMainChart(){
@@ -87,6 +90,7 @@ function buildMainChart(){
   volume.priceScale().applyOptions({scaleMargins:{top:.82,bottom:0}});
   markerApi=createSeriesMarkers(candle,[]);
   chart.subscribeCrosshairMove(p=>{
+    movingAverages?.updateLegend(p.point&&p.time?p.seriesData:null);
     if(!p.point||!p.time)return;
     const d=p.seriesData.get(candle);if(d)$('#cursorInfo').innerHTML=`北京时间：${fmtBJ(Number(p.time),true)}<br>O ${num(d.open)} · H ${num(d.high)} · L ${num(d.low)} · C ${num(d.close)}`;
     renderContextAt(Number(p.time));
@@ -298,6 +302,7 @@ function showRowsForResearch(rows,ctxRows){
   currentRows=rows.slice();
   buildMainChart();
   candle.setData(toCandleRows(currentRows));volume.setData(toVolumeRows(currentRows));rebuildMap();
+  movingAverages=addMovingAverages(chart,LineSeries,currentRows,$('#movingAverageLegend'));
   chart.timeScale().fitContent();renderDrawings();renderHumanMarkers();
   setContextData({rows:(ctxRows||[]).slice()});
 }
@@ -474,5 +479,4 @@ async function init(){
   await loadGlobalRange();renderHumanLabelsTable();
 }
 init().catch(e=>{document.body.innerHTML=`<pre style="color:white;padding:20px">启动失败：${e.stack||e}</pre>`});
-
 
