@@ -9,7 +9,6 @@
 
 **可视化界面：** [https://sunhshun811-collab.github.io/BTCUSDT_Price_Action_Lab/](https://sunhshun811-collab.github.io/BTCUSDT_Price_Action_Lab/)
 
-**功能树：** [查看功能树](https://sunhshun811-collab.github.io/BTCUSDT_Price_Action_Lab/function-map.html)
 
 ## 项目定位
 
