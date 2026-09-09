@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-09-08T03:25:40.730585+00:00",
+  "generated_at_utc": "2026-09-09T03:25:31.277395+00:00",
   "months": {
     "2020-01": {
       "month": "2020-01",
@@ -2084,12 +2084,12 @@
     "2026-09": {
       "month": "2026-09",
       "kline_1m": {
-        "expected": 10285,
-        "rows": 8640,
-        "coverage": 0.8400583373845406,
+        "expected": 11725,
+        "rows": 10080,
+        "coverage": 0.8597014925373134,
         "missing": 1645
       },
-      "context_5m_rows": 1728,
+      "context_5m_rows": 2016,
       "source_coverage": {
         "kline_taker": 1.0,
         "funding": 0.0,
