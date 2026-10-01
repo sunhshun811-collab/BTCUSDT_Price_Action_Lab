@@ -1,0 +1,14 @@
+{
+  "month": "2026-10",
+  "error": "NO_KLINE_SOURCE_DATA",
+  "kline_1m": {
+    "expected": 604,
+    "rows": 0,
+    "coverage": 0.0,
+    "missing": 604
+  },
+  "source_coverage": {},
+  "sources": {
+    "klines": "missing"
+  }
+}

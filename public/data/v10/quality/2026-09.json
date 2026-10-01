@@ -1,15 +1,15 @@
 {
   "month": "2026-09",
   "kline_1m": {
-    "expected": 42339,
-    "rows": 41760,
-    "coverage": 0.9863246652022958,
-    "missing": 579
+    "expected": 43200,
+    "rows": 43200,
+    "coverage": 1.0,
+    "missing": 0
   },
-  "context_5m_rows": 8352,
+  "context_5m_rows": 8640,
   "source_coverage": {
     "kline_taker": 1.0,
-    "funding": 0.0,
+    "funding": 1.0,
     "mark": 1.0,
     "index": 1.0,
     "premium": 1.0,
@@ -17,7 +17,7 @@
   },
   "sources": {
     "klines": "daily",
-    "funding": "missing",
+    "funding": "monthly",
     "mark": "daily",
     "index": "daily",
     "premium": "daily",
