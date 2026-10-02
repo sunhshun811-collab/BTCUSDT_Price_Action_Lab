@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-01T10:04:44.456921+00:00",
+  "generated_at_utc": "2026-10-02T09:42:39.042575+00:00",
   "months": {
     "2020-01": {
       "month": "2020-01",
@@ -2099,26 +2099,38 @@
         "metrics": 0.0
       },
       "sources": {
-        "klines": "daily",
+        "klines": "monthly",
         "funding": "monthly",
-        "mark": "daily",
+        "mark": "monthly",
         "index": "daily",
-        "premium": "daily",
+        "premium": "monthly",
         "metrics": "daily"
       }
     },
     "2026-10": {
       "month": "2026-10",
-      "error": "NO_KLINE_SOURCE_DATA",
       "kline_1m": {
-        "expected": 604,
-        "rows": 0,
-        "coverage": 0.0,
-        "missing": 604
+        "expected": 2022,
+        "rows": 1440,
+        "coverage": 0.712166172106825,
+        "missing": 582
       },
-      "source_coverage": {},
+      "context_5m_rows": 288,
+      "source_coverage": {
+        "kline_taker": 1.0,
+        "funding": 0.0,
+        "mark": 1.0,
+        "index": 1.0,
+        "premium": 1.0,
+        "metrics": 0.0
+      },
       "sources": {
-        "klines": "missing"
+        "klines": "daily",
+        "funding": "missing",
+        "mark": "daily",
+        "index": "daily",
+        "premium": "daily",
+        "metrics": "daily"
       }
     }
   },
