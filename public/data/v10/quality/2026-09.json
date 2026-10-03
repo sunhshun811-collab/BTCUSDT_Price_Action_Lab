@@ -19,7 +19,7 @@
     "klines": "monthly",
     "funding": "monthly",
     "mark": "monthly",
-    "index": "daily",
+    "index": "monthly",
     "premium": "monthly",
     "metrics": "daily"
   }
