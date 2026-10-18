@@ -1,12 +1,12 @@
 {
   "month": "2026-10",
   "kline_1m": {
-    "expected": 23504,
-    "rows": 21600,
-    "coverage": 0.9189925119128659,
-    "missing": 1904
+    "expected": 24959,
+    "rows": 24480,
+    "coverage": 0.9808085259826115,
+    "missing": 479
   },
-  "context_5m_rows": 4320,
+  "context_5m_rows": 4896,
   "source_coverage": {
     "kline_taker": 1.0,
     "funding": 0.0,
