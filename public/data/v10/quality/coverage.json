@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-20T08:28:22.181578+00:00",
+  "generated_at_utc": "2026-10-21T08:31:04.309478+00:00",
   "months": {
     "2020-01": {
       "month": "2020-01",
@@ -2110,10 +2110,10 @@
     "2026-10": {
       "month": "2026-10",
       "kline_1m": {
-        "expected": 27868,
+        "expected": 29311,
         "rows": 27360,
-        "coverage": 0.9817712071192766,
-        "missing": 508
+        "coverage": 0.9334379584456347,
+        "missing": 1951
       },
       "context_5m_rows": 5472,
       "source_coverage": {
