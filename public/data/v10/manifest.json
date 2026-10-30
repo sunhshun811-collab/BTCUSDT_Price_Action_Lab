@@ -1,9 +1,9 @@
 {
   "version": 10,
-  "revision": "20261029T095405Z",
+  "revision": "20261030T095703Z",
   "symbol": "BTCUSDT",
   "market": "Binance USD-M Perpetual",
-  "generated_at_utc": "2026-10-29T09:54:05.466806+00:00",
+  "generated_at_utc": "2026-10-30T09:57:03.637824+00:00",
   "start_month": "2020-01",
   "end_month": "2026-10",
   "timeframes": {
@@ -893,7 +893,7 @@
   "storage": {
     "format": "little-endian float64 row-major + gzip",
     "base": "data/v10",
-    "browser_cache_revision": "20261029T095405Z"
+    "browser_cache_revision": "20261030T095703Z"
   },
   "quality": {
     "incomplete_months": [
