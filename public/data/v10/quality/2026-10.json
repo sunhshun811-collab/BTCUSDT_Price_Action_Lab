@@ -1,18 +1,18 @@
 {
   "month": "2026-10",
   "kline_1m": {
-    "expected": 42357,
-    "rows": 40320,
-    "coverage": 0.9519087754090233,
-    "missing": 2037
+    "expected": 43774,
+    "rows": 41760,
+    "coverage": 0.9539909535340613,
+    "missing": 2014
   },
-  "context_5m_rows": 8064,
+  "context_5m_rows": 8352,
   "source_coverage": {
     "kline_taker": 1.0,
     "funding": 0.0,
-    "mark": 0.9642857142857143,
-    "index": 0.9642857142857143,
-    "premium": 0.9642857142857143,
+    "mark": 0.9655172413793104,
+    "index": 0.9655172413793104,
+    "premium": 0.9655172413793104,
     "metrics": 0.0
   },
   "sources": {
