@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-31T09:34:40.501809+00:00",
+  "generated_at_utc": "2026-11-01T10:24:05.981064+00:00",
   "months": {
     "2020-01": {
       "month": "2020-01",
@@ -2110,27 +2110,41 @@
     "2026-10": {
       "month": "2026-10",
       "kline_1m": {
-        "expected": 43774,
-        "rows": 41760,
-        "coverage": 0.9539909535340613,
-        "missing": 2014
+        "expected": 44640,
+        "rows": 43200,
+        "coverage": 0.967741935483871,
+        "missing": 1440
       },
-      "context_5m_rows": 8352,
+      "context_5m_rows": 8640,
       "source_coverage": {
         "kline_taker": 1.0,
-        "funding": 0.0,
-        "mark": 0.9655172413793104,
-        "index": 0.9655172413793104,
-        "premium": 0.9655172413793104,
+        "funding": 1.0,
+        "mark": 0.9666666666666667,
+        "index": 0.9666666666666667,
+        "premium": 0.9666666666666667,
         "metrics": 0.0
       },
       "sources": {
         "klines": "daily",
-        "funding": "missing",
+        "funding": "monthly",
         "mark": "daily",
         "index": "daily",
         "premium": "daily",
         "metrics": "daily"
+      }
+    },
+    "2026-11": {
+      "month": "2026-11",
+      "error": "NO_KLINE_SOURCE_DATA",
+      "kline_1m": {
+        "expected": 624,
+        "rows": 0,
+        "coverage": 0.0,
+        "missing": 624
+      },
+      "source_coverage": {},
+      "sources": {
+        "klines": "missing"
       }
     }
   },
@@ -2216,6 +2230,7 @@
     "2026-07",
     "2026-08",
     "2026-09",
-    "2026-10"
+    "2026-10",
+    "2026-11"
   ]
 }
