@@ -16,11 +16,11 @@
     "metrics": 0.0
   },
   "sources": {
-    "klines": "daily",
+    "klines": "monthly",
     "funding": "monthly",
-    "mark": "daily",
-    "index": "daily",
-    "premium": "daily",
+    "mark": "monthly",
+    "index": "monthly",
+    "premium": "monthly",
     "metrics": "daily"
   }
 }
